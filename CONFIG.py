@@ -1,6 +1,6 @@
 # GLOBAL VARIABLES
 # Physical Parameters
-WHEEL_LENGTH = 
+WHEEL_SEPARATION = 
 WHEEL_RADIUS = 
 
 # Chosen/Calibrated Parameters
