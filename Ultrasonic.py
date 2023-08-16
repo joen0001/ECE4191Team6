@@ -1,4 +1,4 @@
-from CONFIG.py import *  
+from CONFIG import *  
 from gpiozero import DistanceSensor
 
 def Ultrasonic():
