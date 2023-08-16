@@ -6,7 +6,7 @@ WHEEL_RADIUS =
 # Chosen/Calibrated Parameters
 MOTOR_SPEED = 
 SHAFTENC_STEPS2DEG = 
-ULTRA_MIN_DIST = 
+ULT_MIN_DIST = 
 PACKAGEDROP_OFFSET = 
 
 # Pin Mappings
