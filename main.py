@@ -1,18 +1,19 @@
 # from CONFIG import *
 from Classes import *
 from Ultrasonic import Ultrasonic
-from ShaftEncoder import ShaftEncoder
+# from ShaftEncoder import ShaftEncoder
 import numpy as np
 from multiprocessing import Process, Value, Array
-from gpiozero import RotaryEncoder
+import gpiozero
 from matplotlib import pyplot as plt
 import time
 import math
 WHEEL_SEPARATION = 220
 WHEEL_RADIUS = 28
-last_time = Value(0)
+# NOTE MAKE ALL GLOBAL MULTITHREAD
+last_time = time.time()
 # Array [Left, Right]
-last_encoder_steps = Array('int32', [0, 0])
+last_encoder_steps = [0, 0]
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
 
     # TH_General = Process(target = )
     TH_Ultrasonic = Process(target=Ultrasonic, args=(ultra_arr))
+    TH_Encoder = Process()
 
     # TH_General.start()
     TH_Ultrasonic.start()
@@ -49,10 +51,9 @@ def main():
                             robot.x, robot.y, robot.th)
 
         duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
-
-        # Simulate robot motion - send duty cycle command to robot
+        encoder_l_w, encoder_r_w = speedcalc(encoder_l,encoder_r)
         x, y, th = robot.pose_update(
-            [encoder_l.steps, encoder_r.steps])  # NEED TO FIX
+            [encoder_l_w, encoder_r_w])  # NEED TO FIX
         motor_l.forward(duty_cycle_l)
         motor_r.forward(duty_cycle_r)
         # Log data
@@ -72,7 +73,6 @@ def speedcalc(encoder_l, encoder_r):
     last_time = time.time()
     last_encoder_steps[0] = encoder_l.steps
     last_encoder_steps[1] = encoder_r.steps
-
-	# Calculate velocity
-	encoder_l_w = 2*math.pi*(encoder_l_diff/encoder_total_steps)/time_diff
-    encoder_r_w = 2*math.pi*(encoder_r_diff/encoder_total_steps)/time_diff
+    encoder_l_w = 2*math.pi*(encoder_l_diff/920)/time_diff
+    encoder_r_w = 2*math.pi*(encoder_r_diff/920)/time_diff
+    return encoder_l_w, encoder_r_w

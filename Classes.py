@@ -6,6 +6,7 @@ import numpy as np
 from Multiprocessing import Process, Value, Array
 from gpiozero import Motor, RotaryEncoder
 from matplotlib import pyplot as plt
+from main import *
 
 class Motor:
     def __init__(self, forward_pin, backward_pin, enable_pin):
@@ -65,7 +66,7 @@ class DiffDriveRobot:
         self.th = 0.0 # orientation
         
         self.wl = 0.0 #rotational velocity left wheel
-        self.wr = 0.0 #rotational velocity right wheel
+        self.wr = 0.0 #rotational vdelocity right wheel
         
         self.dt = dt
         
@@ -85,11 +86,8 @@ class DiffDriveRobot:
     
     # Kinematic motion model
     def pose_update(self,enc_arr):
-        self.wl = enc_arr[0].steps/960
-        self.wr = enc_arr[1].steps/960
-        
-        v, w = self.base_velocity(self.wl,self.wr)
-        
+
+        v, w = self.base_velocity(enc_arr[0],enc_arr[1])
         self.x = self.x + self.dt*v*np.cos(self.th)
         self.y = self.y + self.dt*v*np.sin(self.th)
         self.th = self.th + w*self.dt
