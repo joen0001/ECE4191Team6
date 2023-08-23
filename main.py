@@ -1,6 +1,6 @@
 # from CONFIG import *
 from Classes import *
-from Ultrasonic import Ultrasonic
+#from Ultrasonic import Ultrasonic
 # from ShaftEncoder import ShaftEncoder
 import numpy as np
 from multiprocessing import Process, Value, Array
