@@ -1,9 +1,9 @@
 import gpiozero
 #from CONFIG import *
-from Ultrasonic import Ultrasonic
-from ShaftEncoder import ShaftEncoder
+# from Ultrasonic import Ultrasonic
+# from ShaftEncoder import ShaftEncoder
 import numpy as np
-from Multiprocessing import Process, Value, Array
+from multiprocessing import Process, Value, Array
 from gpiozero import Motor, RotaryEncoder
 from matplotlib import pyplot as plt
 from main import *
@@ -57,6 +57,12 @@ class Motor:
         :return: A boolean representing if the motor is active
         """
         return self.enable_pwm.value > 0
+
+    def drive(self, speed):
+        if speed < 0:
+            self.backward(-speed)
+        else:
+            self.forward(speed)
 
 class DiffDriveRobot:  
     def __init__(self, dt=0.1, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION):

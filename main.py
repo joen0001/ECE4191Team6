@@ -12,12 +12,14 @@ import argparse
 WHEEL_SEPARATION = 220
 WHEEL_RADIUS = 28
 # NOTE MAKE ALL GLOBAL MULTITHREAD
-last_time = time.time()
-# Array [Left, Right]
-last_encoder_steps = [0, 0]
+
 
 
 def main(x_in, y_in, th_in):
+    last_time = time.time()
+    # Array [Left, Right]
+    last_encoder_steps = [0, 0]
+
     encoder_l = gpiozero.RotaryEncoder(a=17, b=27, max_steps=100000)
     encoder_r = gpiozero.RotaryEncoder(a=20, b=21, max_steps=100000)
     # 'i' for signed integer, 'd' for double prec float
@@ -45,44 +47,47 @@ def main(x_in, y_in, th_in):
     goal_y = y_in  # NEEDS CHANGING
     goal_th = th_in  # NEEDS CHANGING
 
-    for i in range(200):
+    for i in range(20000):
 
         # Plan using tentacles
         v, w = planner.plan(goal_x, goal_y, goal_th,
                             robot.x, robot.y, robot.th)
 
         duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
-        encoder_l_w, encoder_r_w = speedcalc(encoder_l, encoder_r)
+        encoder_l_w, encoder_r_w, last_time = speedcalc(encoder_l, encoder_r, last_time, last_encoder_steps)
+        print(encoder_l_w)
         x, y, th = robot.pose_update(
             [encoder_l_w, encoder_r_w])  # NEED TO FIX
-        motor_l.forward(duty_cycle_l)
-        motor_r.forward(duty_cycle_r)
+        motor_l.drive(duty_cycle_l)
+        motor_r.drive(duty_cycle_r)
         # Log data
         poses.append([x, y, th])
         duty_cycle_commands.append([duty_cycle_l, duty_cycle_r])
         velocities.append([robot.wl, robot.wr])
 
 
-def speedcalc(encoder_l, encoder_r):
+def speedcalc(encoder_l, encoder_r, last_time, last_encoder_steps):
 
    # Get the difference between last call and current call
-    time_diff = time.time()-last_time
-    encoder_l_diff = encoder_l.steps-last_encoder_steps[0]
-    encoder_r_diff = encoder_r.steps-last_encoder_steps[1]
+    cur = time.time()
+    cur_l = encoder_l.steps
+    cur_r = encoder_r.steps
+    time_diff = cur-last_time
+    encoder_l_diff = cur_l-last_encoder_steps[0]
+    encoder_r_diff = cur_r-last_encoder_steps[1]
 
     # Update values
-    last_time = time.time()
     last_encoder_steps[0] = encoder_l.steps
     last_encoder_steps[1] = encoder_r.steps
     encoder_l_w = 2*math.pi*(encoder_l_diff/920)/time_diff
     encoder_r_w = 2*math.pi*(encoder_r_diff/920)/time_diff
-    return encoder_l_w, encoder_r_w
+    return encoder_l_w, encoder_r_w, cur
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("main")
-    parser.add_argument("--x", type=int, default=10)
-    parser.add_argument("--y", type=int, default=10)
-    parser.add_argument("--th", type=float, default=0)
-    args, _ = parser.parse_known_args
-    main(args.x, args.y, args.th)
+    # parser = argparse.ArgumentParser("main")
+    # parser.add_argument("--x", type=int, default=10)
+    # parser.add_argument("--y", type=int, default=10)
+    # parser.add_argument("--th", type=float, default=0)
+    # args, _ = parser.parse_known_args
+    main(10, 10, 0)
