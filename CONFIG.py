@@ -1,7 +1,7 @@
 # GLOBAL VARIABLES
 # Physical Parameters
-WHEEL_SEPARATION = 
-WHEEL_RADIUS = 
+WHEEL_SEPARATION = 220
+WHEEL_RADIUS = 28
 
 # Chosen/Calibrated Parameters
 MOTOR_SPEED = 

@@ -58,7 +58,7 @@ class Motor:
         return self.enable_pwm.value > 0
 
 class DiffDriveRobot:  
-    def __init__(self,inertia=5, dt=0.1, drag=0.2, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION):
+    def __init__(self, dt=0.1, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION):
         
         self.x = 0.0 # y-position
         self.y = 0.0 # y-position 
@@ -67,19 +67,12 @@ class DiffDriveRobot:
         self.wl = 0.0 #rotational velocity left wheel
         self.wr = 0.0 #rotational velocity right wheel
         
-        self.I = inertia
-        self.d = drag
         self.dt = dt
         
         self.r = wheel_radius
         self.l = wheel_sep
     
-    # Motor encoder measurement which measures how fast wheel is turning
-  # NEED TO COMPLETE
-    def RotEnc(A, B):
-      encoder = RotaryEncoder(A, B, max_steps=10000)
-      #encoder.steps
-      return w
+
     
     # Veclocity motion model
     def base_velocity(self,wl,wr):
@@ -91,10 +84,9 @@ class DiffDriveRobot:
         return v, w
     
     # Kinematic motion model
-    def pose_update(self,duty_cycle_l,duty_cycle_r):
-        
-        self.wl = self.motor_simulator(self.wl,duty_cycle_l)
-        self.wr = self.motor_simulator(self.wr,duty_cycle_r)
+    def pose_update(self,enc_arr):
+        self.wl = enc_arr[0].steps/960
+        self.wr = enc_arr[1].steps/960
         
         v, w = self.base_velocity(self.wl,self.wr)
         
@@ -113,7 +105,7 @@ class TentaclePlanner:
         self.dt = dt
         self.steps = steps
         # Tentacles are possible trajectories to follow
-        #self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
+        self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
         
         self.alpha = alpha
         self.beta = beta
