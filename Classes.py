@@ -1,5 +1,5 @@
 import gpiozero
-from CONFIG import *
+#from CONFIG import *
 from Ultrasonic import Ultrasonic
 from ShaftEncoder import ShaftEncoder
 import numpy as np
@@ -127,7 +127,7 @@ class TentaclePlanner:
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
         
-        front_sensor, left_sensor, right_sensor = Ultrasonic()
+        #front_sensor, left_sensor, right_sensor = Ultrasonic()
         costs =[]
         for v,w in self.tentacles:
             costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
