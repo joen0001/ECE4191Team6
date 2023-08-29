@@ -6,10 +6,9 @@ import numpy as np
 from multiprocessing import Process, Value, Array
 from gpiozero import Motor, RotaryEncoder
 from matplotlib import pyplot as plt
-from main import *
 
 class Motor:
-    def __init__(self, forward_pin, backward_pin, enable_pin):
+    def __init__(self, forward_pin, backward_pin, enable_pin, encoder_a_pin, encoder_b_pin):
         """
         Initialise the Motor object
         :param forward_pin: The forward pin number
@@ -19,6 +18,7 @@ class Motor:
         self.forward_pin = gpiozero.OutputDevice(pin=forward_pin)
         self.backward_pin = gpiozero.OutputDevice(pin=backward_pin)
         self.enable_pwm = gpiozero.PWMOutputDevice(pin=enable_pin, active_high=True, initial_value=0, frequency=100)
+        self.encoder = gpiozero.RotaryEncoder(a = encoder_a_pin, b = encoder_b_pin, max_steps = 0) 
 
     def stop(self):
         """
@@ -34,6 +34,7 @@ class Motor:
         :param speed: A float between 0 and 1 representing the speed of the motor
         """
         self.forward_pin.value = True
+        self.backward_pin.value = False
         self.enable_pwm.value = speed
 
     def backward(self, speed):
@@ -41,7 +42,8 @@ class Motor:
         Makes the motors move backward
         :param speed: A float between 0 and 1 representing the speed of the motor
         """
-        self.forward_pin.value = True
+        self.forward_pin.value = False
+        self.backward_pin.value = True
         self.enable_pwm.value = speed
 
     def reverse(self):
@@ -63,9 +65,10 @@ class Motor:
             self.backward(-speed)
         else:
             self.forward(speed)
+    
 
 class DiffDriveRobot:  
-    def __init__(self, dt=0.1, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION):
+    def __init__(self, dt=0.1, wheel_radius=28, wheel_sep=220):
         
         self.x = 0.0 # y-position
         self.y = 0.0 # y-position 
