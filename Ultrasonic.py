@@ -1,21 +1,13 @@
-#from CONFIG import *
+from CONFIG import *
 from gpiozero import DistanceSensor
 
-
-<<<<<<< Updated upstream
-def Ultrasonic():
-    sensor_front = DistanceSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG)
-    sensor_right = DistanceSensor(ULT_RIGHT_ECHO, ULT_RIGHT_TRIG)
-    sensor_left = DistanceSensor(ULT_LEFT_ECHO, ULT_LEFT_TRIG)
-    return sensor_front.distance*100, sensor_right.distance*100, sensor_left.distance*100
-=======
 class UltrasonicSensor:
     def __init__(self, threshold):
         self.sensor_front = DistanceSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG)
         self.sensor_fright = DistanceSensor(ULT_RIGHT_ECHO, ULT_RIGHT_TRIG)
         self.sensor_fleft = DistanceSensor(ULT_LEFT_ECHO, ULT_LEFT_TRIG)
-        self.sensor_right = DistanceSensor(ULT_BACK_RIGHT_ECHO, ULT_BACK_RIGHT_TRIG)
-        self.sensor_left = DistanceSensor(ULT_BACK_LEFT_ECHO, ULT_BACK_LEFT_TRIG)
+        self.sensor_right = DistanceSensor(ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG)
+        self.sensor_left = DistanceSensor(ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG)
         self.threshold = threshold
         
     def _check_threshold(self, distance):  # A private method to check threshold
@@ -69,4 +61,3 @@ class UltrasonicSensor:
 
         # No obstacle detected based on threshold
         return None, None
->>>>>>> Stashed changes

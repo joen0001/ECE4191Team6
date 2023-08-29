@@ -1,6 +1,6 @@
 import gpiozero
 #from CONFIG import *
-# from Ultrasonic import Ultrasonic
+from Ultrasonic import UltrasonicSensor
 # from ShaftEncoder import ShaftEncoder
 import numpy as np
 from multiprocessing import Process, Value, Array
@@ -136,9 +136,7 @@ class TentaclePlanner:
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
         
-<<<<<<< Updated upstream
         #front_sensor, left_sensor, right_sensor = Ultrasonic()
-=======
         """
         Obstacle avoidance code within planning tentacles, WIP:
         """
@@ -156,7 +154,6 @@ class TentaclePlanner:
             print("Path clear!")
             # Do regular tentacle cost calculation below...
 
->>>>>>> Stashed changes
         costs =[]
         for v,w in self.tentacles:
             costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
