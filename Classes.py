@@ -136,7 +136,27 @@ class TentaclePlanner:
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
         
+<<<<<<< Updated upstream
         #front_sensor, left_sensor, right_sensor = Ultrasonic()
+=======
+        """
+        Obstacle avoidance code within planning tentacles, WIP:
+        """
+        # (v,w) linear velocity (v) and angular velocity (w)
+        # Use the sensor data to influence which tentacles are valid, refer to
+        # ultrasonic class for obstacle avoidance code
+         
+        # When created, should update the distances.
+        us = UltrasonicSensor(threshold=10)
+        v, w = us.detect_obstacle()
+        if v is not None and w is not None:
+            print(f"Adjusting trajectory: v={v}, w={w}")
+            return v,w
+        else:
+            print("Path clear!")
+            # Do regular tentacle cost calculation below...
+
+>>>>>>> Stashed changes
         costs =[]
         for v,w in self.tentacles:
             costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
