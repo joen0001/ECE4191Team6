@@ -132,6 +132,14 @@ class TentaclePlanner:
         e_th = np.arctan2(np.sin(e_th),np.cos(e_th))
         
         return self.alpha*((goal_x-x)**2 + (goal_y-y)**2) + self.beta*(e_th**2)
+    
+    def check_collision(self,x,y):
+        
+        min_dist = np.min(np.sqrt((x-self.obstacles[:,0])**2+(y-self.obstacles[:,1])**2))
+    
+        if (min_dist < 0.1):
+            return True
+        return False
         
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
