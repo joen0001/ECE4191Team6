@@ -19,10 +19,8 @@ if __name__ == "__main__":
         old_time = time.time()
         time.sleep(0.2)
         elapsed_time = time.time()-old_time
-        print(motor_l.encoder.steps-old_encoder_l/960)
-        print(elapsed_time)
-        angular_velocity_l = ((motor_l.encoder.steps-old_encoder_l)/960)/elapsed_time
-        angular_velocity_r = ((motor_r.encoder.steps-old_encoder_r)/960)/elapsed_time
+        angular_velocity_l = 2 * math.pi * (motor_l.encoder.steps-old_encoder_l/960)/elapsed_time
+        angular_velocity_r = 2 * math.pi * (motor_r.encoder.steps-old_encoder_r/960)/elapsed_time
 
         print(f'angular: {angular_velocity_l}')
         print(f'steps: {motor_l.encoder.steps}')

@@ -6,7 +6,6 @@ import numpy as np
 from multiprocessing import Process, Value, Array
 from gpiozero import Motor, RotaryEncoder
 from matplotlib import pyplot as plt
-from main import *
 
 class Motor:
     def __init__(self, forward_pin, backward_pin, enable_pin, encoder_a_pin, encoder_b_pin):
@@ -67,7 +66,7 @@ class Motor:
     
 
 class DiffDriveRobot:  
-    def __init__(self, dt=0.1, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION):
+    def __init__(self, dt=0.1, wheel_radius=28, wheel_sep=220):
         
         self.x = 0.0 # y-position
         self.y = 0.0 # y-position 
