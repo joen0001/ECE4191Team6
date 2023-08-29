@@ -34,6 +34,7 @@ class Motor:
         :param speed: A float between 0 and 1 representing the speed of the motor
         """
         self.forward_pin.value = True
+        self.backward_pin.value = False
         self.enable_pwm.value = speed
 
     def backward(self, speed):
@@ -41,7 +42,8 @@ class Motor:
         Makes the motors move backward
         :param speed: A float between 0 and 1 representing the speed of the motor
         """
-        self.forward_pin.value = True
+        self.forward_pin.value = False
+        self.backward_pin.value = True
         self.enable_pwm.value = speed
 
     def reverse(self):

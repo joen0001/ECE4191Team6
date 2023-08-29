@@ -49,7 +49,7 @@ def main(x_in, y_in, th_in):
     goal_y = y_in  # NEEDS CHANGING
     goal_th = th_in  # NEEDS CHANGING
 
-    for i in range(20000):
+    for i in range(10000):
         old_encoder_l = motor_l.encoder.steps
         old_encoder_r = motor_r.encoder.steps
         old_time = time.time()
@@ -57,6 +57,8 @@ def main(x_in, y_in, th_in):
         elapsed_time = time.time()-old_time
         angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps-old_encoder_l)/960)/elapsed_time
         angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps-old_encoder_r)/960)/elapsed_time
+        robot.wl = angular_velocity_l
+        robot.wr = angular_velocity_r
 
         # Plan using tentacles
         v, w = planner.plan(goal_x, goal_y, goal_th,
@@ -65,8 +67,8 @@ def main(x_in, y_in, th_in):
         duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
         x, y, th = robot.pose_update(
             [angular_velocity_l, angular_velocity_r])  # NEED TO FIX
-        motor_l.drive(duty_cycle_l)
-        motor_r.drive(duty_cycle_r)
+        motor_l.drive(duty_cycle_l*0.3)
+        motor_r.drive(duty_cycle_r*0.3)
         # Log data
         poses.append([x, y, th])
         duty_cycle_commands.append([duty_cycle_l, duty_cycle_r])
@@ -76,6 +78,19 @@ def main(x_in, y_in, th_in):
         print(f'duty_cycle: {duty_cycle_commands} \n')
         print(f'velocities: {velocities} \n')
 
+        if abs(x-goal_x)<0.01 and abs(y-goal_y) < 0.01:
+            break
+
+    plt.plot(np.array(poses)[:,0],np.array(poses)[:,1])
+    plt.plot(x,y,'k',marker='+')
+    plt.quiver(x,y,0.1*np.cos(th),0.1*np.sin(th))
+    plt.plot(goal_x,goal_y,'x',markersize=5)
+    plt.quiver(goal_x,goal_y,0.1*np.cos(goal_th),0.1*np.sin(goal_th))
+    plt.xlim(-1,1)
+    plt.ylim(-1,1)
+    plt.xlabel('x-position (m)')
+    plt.ylabel('y-position (m)')
+    plt.savefig('path_taken.png')
 
 
 def speedcalc(encoder_l, encoder_r, last_time, last_encoder_steps):
@@ -102,5 +117,5 @@ if __name__ == "__main__":
     # parser.add_argument("--y", type=int, default=10)
     # parser.add_argument("--th", type=float, default=0)
     # args, _ = parser.parse_known_args
-    main(100, 100, 0)
+    main(0.3, 0.3, 0)
 
