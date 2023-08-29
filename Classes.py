@@ -1,12 +1,13 @@
 import gpiozero
 #from CONFIG import *
-# from Ultrasonic import Ultrasonic
+from Ultrasonic import UltrasonicSensor
 # from ShaftEncoder import ShaftEncoder
 import numpy as np
 from multiprocessing import Process, Value, Array
 from gpiozero import Motor, RotaryEncoder
 from matplotlib import pyplot as plt
 from main import *
+
 
 class Motor:
     def __init__(self, forward_pin, backward_pin, enable_pin):
@@ -110,7 +111,16 @@ class TentaclePlanner:
         self.steps = steps
         # Tentacles are possible trajectories to follow
         self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
-        
+        """
+        (0.0,0.5) rotate left, 
+        (0.0,-0.5) rotate right,
+        (0.1,1.0) foward right,
+        (0.1,-1.0) forward left,
+        (0.1,0.5) forward less right,
+        (0.1,-0.5) forward less left,
+        (0.1,0.0) straight forward,
+        (0.0,0.0) don't move or rotate
+        """
         self.alpha = alpha
         self.beta = beta
         self.avoid_left = False
@@ -129,11 +139,27 @@ class TentaclePlanner:
         e_th = np.arctan2(np.sin(e_th),np.cos(e_th))
         
         return self.alpha*((goal_x-x)**2 + (goal_y-y)**2) + self.beta*(e_th**2)
-        
+    
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
         
-        #front_sensor, left_sensor, right_sensor = Ultrasonic()
+        """
+        Obstacle avoidance code within planning tentacles, WIP:
+        """
+        # (v,w) linear velocity (v) and angular velocity (w)
+        # Use the sensor data to influence which tentacles are valid, refer to
+        # ultrasonic class for obstacle avoidance code
+         
+        # When created, should update the distances.
+        us = UltrasonicSensor(threshold=10)
+        v, w = us.detect_obstacle()
+        if v is not None and w is not None:
+            print(f"Adjusting trajectory: v={v}, w={w}")
+            return v,w
+        else:
+            print("Path clear!")
+            # Do regular tentacle cost calcatuon below...
+
         costs =[]
         for v,w in self.tentacles:
             costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
