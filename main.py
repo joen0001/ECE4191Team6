@@ -9,8 +9,8 @@ from matplotlib import pyplot as plt
 import time
 import math
 import argparse
-WHEEL_SEPARATION = 220
-WHEEL_RADIUS = 28
+WHEEL_SEPARATION = 0.22
+WHEEL_RADIUS = 0.028
 # NOTE MAKE ALL GLOBAL MULTITHREAD
 
 
