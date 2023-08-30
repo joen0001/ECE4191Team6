@@ -1,6 +1,6 @@
 import gpiozero
 #from CONFIG import *
-# from Ultrasonic import Ultrasonic
+from Ultrasonic import UltrasonicSensor
 # from ShaftEncoder import ShaftEncoder
 import numpy as np
 from multiprocessing import Process, Value, Array
@@ -107,18 +107,18 @@ class DiffDriveRobot:
         
 class TentaclePlanner:
     
-    def __init__(self,dt=0.1,steps=5,alpha=1,beta=0.1):
-        
+    def __init__(self,us_sensor,dt=0.1,steps=5,alpha=1,beta=0.1):
+        self.us_sensor = us_sensor
         self.dt = dt
         self.steps = steps
         # Tentacles are possible trajectories to follow
         self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
-        
+        # Duty cycles - power on left and right wheel (turning in intended direction)
         self.alpha = alpha
         self.beta = beta
         self.avoid_left = False
         self.left_counter = 0
-    
+
     # Play a trajectory and evaluate where you'd end up
     def roll_out(self,v,w,goal_x,goal_y,goal_th,x,y,th):
         
@@ -132,11 +132,36 @@ class TentaclePlanner:
         e_th = np.arctan2(np.sin(e_th),np.cos(e_th))
         
         return self.alpha*((goal_x-x)**2 + (goal_y-y)**2) + self.beta*(e_th**2)
+    
+    def check_collision(self,x,y):
+        
+        min_dist = np.min(np.sqrt((x-self.obstacles[:,0])**2+(y-self.obstacles[:,1])**2))
+    
+        if (min_dist < 0.1):
+            return True
+        return False
         
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
         
         #front_sensor, left_sensor, right_sensor = Ultrasonic()
+        """
+        Obstacle avoidance code within planning tentacles, WIP:
+        """
+        # (v,w) linear velocity (v) and angular velocity (w)
+        # Use the sensor data to influence which tentacles are valid, refer to
+        # ultrasonic class for obstacle avoidance code
+         
+        # When created, should update the distances.
+        # us = UltrasonicSensor(threshold=10)
+        l, r = self.us_sensor.detect_obstacle()
+        if l is not None and r is not None:
+            print(f"Adjusting trajectory: v={l}, w={r}")
+            return l,r
+        else:
+            print("Path clear!")
+            # Do regular tentacle cost calculation below...
+
         costs =[]
         for v,w in self.tentacles:
             costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
@@ -144,7 +169,6 @@ class TentaclePlanner:
         best_idx = np.argmin(costs)
         
         return self.tentacles[best_idx]
-
 
 class RobotController:
     
