@@ -13,9 +13,13 @@ WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
 # NOTE MAKE ALL GLOBAL MULTITHREAD
 
+<<<<<<< Updated upstream
 
 
 def main(goals):
+=======
+def main(x_in, y_in, th_in):
+>>>>>>> Stashed changes
     last_time = time.time()
     # Array [Left, Right]
     last_encoder_steps = [0, 0]

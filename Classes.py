@@ -113,11 +113,15 @@ class TentaclePlanner:
         self.steps = steps
         # Tentacles are possible trajectories to follow
         self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
-        # Duty cycles - power on left and right wheel (turning in intended direction)
+        # v,w - (turning in intended direction)
         self.alpha = alpha
         self.beta = beta
         self.avoid_left = False
         self.left_counter = 0
+        # Turning tentacles:
+        self.left_turning = []
+        self.right_turning = []
+        self.straight = []
 
     # Play a trajectory and evaluate where you'd end up
     def roll_out(self,v,w,goal_x,goal_y,goal_th,x,y,th):
@@ -133,14 +137,22 @@ class TentaclePlanner:
         
         return self.alpha*((goal_x-x)**2 + (goal_y-y)**2) + self.beta*(e_th**2)
     
-    def check_collision(self,x,y):
+    # Categorize tentacles:
+    def categorize_tentacles(self):
+        for v, w in self.tentacles:
+            if w > 0.1:  # Threshold for left turning
+                self.left_turning.append((v, w))
+            elif w < -0.1:  # Threshold for right turning
+                self.right_turning.append((v, w))
+            else:
+                self.straight.append((v, w))
         
-        min_dist = np.min(np.sqrt((x-self.obstacles[:,0])**2+(y-self.obstacles[:,1])**2))
+        return {
+            "left_turning": self.left_turning,
+            "right_turning": self.right_turning,
+            "straight": self.straight
+        }
     
-        if (min_dist < 0.1):
-            return True
-        return False
-        
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
         
@@ -154,21 +166,36 @@ class TentaclePlanner:
          
         # When created, should update the distances.
         # us = UltrasonicSensor(threshold=10)
-        l, r = self.us_sensor.detect_obstacle()
-        if l is not None and r is not None:
-            print(f"Adjusting trajectory: v={l}, w={r}")
-            return l,r
+        # v, w = self.us_sensor.detect_obstacle()
+        # if v is not None and w is not None:
+        #     print(f"Adjusting trajectory: v={v}, w={w}")
+        #     return v,w
+        # else:
+        #     print("Path clear!")
+        #     # Do regular tentacle cost calculation below...
+        
+        modified_tentacles = self.us_sensor.detect_obstacle()
+        costs = []
+        # Provide only free routes as per threshold
+        if modified_tentacles is not None:
+            for v,w in modified_tentacles:
+                costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
+                best_idx = np.argmin(costs)  
+                return modified_tentacles[best_idx]
+        # Provide all routes
         else:
-            print("Path clear!")
-            # Do regular tentacle cost calculation below...
-
-        costs =[]
-        for v,w in self.tentacles:
-            costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
+            for v,w in self.tentacles:
+                costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
+                best_idx = np.argmin(costs)
+                return self.tentacles[best_idx]
         
-        best_idx = np.argmin(costs)
+        # costs = []
+        # Takes each linear and angular velocity and calculates best cost.
+        # for v,w in self.tentacles:
+        #     costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
         
-        return self.tentacles[best_idx]
+        # best_idx = np.argmin(costs)  
+        # return self.tentacles[best_idx]
 
 class RobotController:
     

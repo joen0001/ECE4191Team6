@@ -2,18 +2,27 @@
 from gpiozero import DistanceSensor
 
 class UltrasonicSensor:
-    def __init__(self, fe, ft, re, rt, le, lt, bre, brt, ble, blt, threshold):
+    def __init__(self, fe, ft, re, rt, le, lt, bre, brt, ble, blt, threshold, counter, tentacle_planner):
         self.sensor_front = DistanceSensor(fe,ft)
         self.sensor_fright = DistanceSensor(re, rt)
         self.sensor_fleft = DistanceSensor(le, lt)
         self.sensor_right = DistanceSensor(bre, brt)
         self.sensor_left = DistanceSensor(ble, blt)
+        # Distance threshold
         self.threshold = threshold
+        # Counter to stop noise readings
+        self.counter = counter
+        # Tentacle planner function
+        self.tentacle_planner = tentacle_planner
+        self.categorized_tentacles = self.tentacle_planner.categorize_tentacles()
         
-    def _check_threshold(self, distance):  # A private method to check threshold
-        if distance < self.threshold:
-            return True
-        return False
+    # Inside threshold
+    def inside(self, distance): 
+        return distance < self.threshold
+    
+    # Outside threshold
+    def outside(self, distance):
+        return distance > self.threshold
 
     def front_distance(self):
         return self.sensor_front.distance * 100
@@ -30,34 +39,93 @@ class UltrasonicSensor:
     def left_distance(self):
         return self.sensor_left.distance * 100
     
+    # detect if tentacles are chill, therefore no obstacles, add into array of costs
+    
     def detect_obstacle(self):
         """Returns new required trajectory in order to avoid obstacle as per sensor readings"""
         front_dist = self.front_distance()
         fright_dist = self.fright_distance()
         fleft_dist = self.fleft_distance()
         
-        """TODO:"""
-        # Need to add obstacle detection for front left and front right rather than just down the middle.
+        """TODO call tentacle planner options, best cost within range of movement"""
+        
+        # Fresh available options everytime.
+        avail = []
+        
+        # Counter for distances beyond threshold, check continually clear:
+        # if self.outside(front_dist) or self.outside(fright_dist) or self.outside(fleft_dist):
+        #     self.counter += 1  # Increment the counter
+        # else:
+        #     self.avail = []
+        #     self.counter = 0  # Reset the counter
 
-        # If obstacle directly ahead
-        if front_dist < self.threshold:
-            # Check if very close to wall on both sides
-            if fright_dist < self.threshold and fleft_dist < self.threshold:
-                # if can see further left, go left
-                if fleft_dist > fright_dist:
-                    return -0.1, 0.5  # backup and turn left
-                # if can see further right, go right
-                elif fleft_dist < fright_dist:
-                    return -0.1, -0.5  # backup and turn right
-                # if can't see further in either direction
-                else:
-                    return -0.1, 0.0  # just back up, try getting another reading
-            # If only the right side is blocked, turn left
-            elif fright_dist < self.threshold:
-                return 0.1, 0.5  # move forward and turn left
-            # If only the left side is blocked, turn right
-            elif fleft_dist < self.threshold:
-                return 0.1, -0.5  # move forward and turn right
+        # If distances remain consistently beyond the threshold over several checks
+        # if self.counter >= 5:
+        if self.outside(front_dist) and self.outside(fleft_dist) and self.outside(fright_dist):
+            # Include all tentacle paths
+            avail.extend(self.categorized_tentacles["left_turning"])
+            avail.extend(self.categorized_tentacles["straight"])
+            avail.extend(self.categorized_tentacles["right_turning"])
+        elif self.outside(front_dist) and self.outside(fleft_dist):
+            # Include front and left paths
+            avail.extend(self.categorized_tentacles["left_turning"])
+            avail.extend(self.categorized_tentacles["straight"])
+        elif self.outside(front_dist) and self.outside(fright_dist):
+            # Include front and right paths
+            avail.extend(self.categorized_tentacles["straight"])
+            avail.extend(self.categorized_tentacles["right_turning"])
+        elif self.outside(fleft_dist) and self.outside(fright_dist):
+            # Include left and right paths
+            avail.extend(self.categorized_tentacles["left_turning"])
+            avail.extend(self.categorized_tentacles["right_turning"])
+        elif self.outside(front_dist):
+            # Include front path
+            avail.extend(self.categorized_tentacles["straight"])
+        elif self.outside(fleft_dist):
+            # Include left path
+            avail.extend(self.categorized_tentacles["left_turning"])
+        elif self.outside(fright_dist):
+            # Include right path
+            avail.extend(self.categorized_tentacles["right_turning"])
+        else:
+            # No clear path, return None
+            return None
 
-        # No obstacle detected based on threshold
-        return None, None
+        return avail
+        
+        
+        # """Other code"""
+        # full_tentacles = tentacle_planner.tentacles.copy()
+        # # Counter for obstacle to avoid noise:
+        # # If obstacle detected in any of the sensors
+        # if self.inside(front_dist) or self.inside(fright_dist) or self.inside(fleft_dist):
+        #     self.counter += 1  # Increment the counter
+        # else:
+        #     self.counter = 0  # Reset the counter
+
+        # # If obstacle directly ahead and the counter threshold is breached
+        # if self.counter >= 5:
+        #     # Check if very close to wall on both sides
+        #     if self.inside(fright_dist) and self.inside(fleft_dist):
+        #         # Choose direction based on which side has a longer distance to the obstacle
+        #         if fleft_dist > fright_dist:
+        #             # TODO: remove right options and front tentacles for a number of steps
+        #             return -0.1, 0.5  # backup and turn left
+        #         elif fleft_dist < fright_dist:
+        #             # TODO: remove left options and front tentacles for a number of steps
+        #             return -0.1, -0.5  # backup and turn right
+        #         else:
+        #             # TODO: do something crazy
+        #             return -0.1, 0.0  # just back up, try getting another reading
+        #     # If only the right side is blocked, turn left
+        #     elif self.inside(fright_dist):
+        #         # TODO: rmove right options and tentacles
+        #         return 0.1, 0.5  # move forward and turn left
+        #     # If only the left side is blocked, turn right
+        #     elif self.inside(fleft_dist):
+        #         # TODO: rmove left options and tentacles
+        #         return 0.1, -0.5  # move forward and turn right
+
+        # # No obstacle detected based on threshold
+        # return None, None
+    
