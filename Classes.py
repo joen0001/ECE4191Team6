@@ -107,18 +107,18 @@ class DiffDriveRobot:
         
 class TentaclePlanner:
     
-    def __init__(self,dt=0.1,steps=5,alpha=1,beta=0.1):
-        
+    def __init__(self,us_sensor,dt=0.1,steps=5,alpha=1,beta=0.1):
+        self.us_sensor = us_sensor
         self.dt = dt
         self.steps = steps
         # Tentacles are possible trajectories to follow
         self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
-        
+        # Duty cycles - power on left and right wheel (turning in intended direction)
         self.alpha = alpha
         self.beta = beta
         self.avoid_left = False
         self.left_counter = 0
-    
+
     # Play a trajectory and evaluate where you'd end up
     def roll_out(self,v,w,goal_x,goal_y,goal_th,x,y,th):
         
@@ -153,11 +153,11 @@ class TentaclePlanner:
         # ultrasonic class for obstacle avoidance code
          
         # When created, should update the distances.
-        us = UltrasonicSensor(threshold=10)
-        v, w = us.detect_obstacle()
-        if v is not None and w is not None:
-            print(f"Adjusting trajectory: v={v}, w={w}")
-            return v,w
+        # us = UltrasonicSensor(threshold=10)
+        l, r = self.us_sensor.detect_obstacle()
+        if l is not None and r is not None:
+            print(f"Adjusting trajectory: v={l}, w={r}")
+            return l,r
         else:
             print("Path clear!")
             # Do regular tentacle cost calculation below...
@@ -169,7 +169,6 @@ class TentaclePlanner:
         best_idx = np.argmin(costs)
         
         return self.tentacles[best_idx]
-
 
 class RobotController:
     

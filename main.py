@@ -1,6 +1,6 @@
-# from CONFIG import *
+from CONFIG import *
 from Classes import Motor, DiffDriveRobot, RobotController, TentaclePlanner
-#from Ultrasonic import Ultrasonic
+from Ultrasonic import UltrasonicSensor
 # from ShaftEncoder import ShaftEncoder
 import numpy as np
 from multiprocessing import Process, Value, Array
@@ -25,7 +25,15 @@ def main(x_in, y_in, th_in):
     motor_r = Motor(23, 24, 13, 20, 21)
     # Define a motor scaling factor to determine max speed as a fraction of PWM
     motor_speed_scaling = 0.3
-
+    
+    # Define ultrasonic sensor class
+    us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
+                          ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
+                          ULT_LEFT_ECHO, ULT_LEFT_TRIG,
+                          ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
+                          ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
+                          threshold=10)
+    
     # 'i' for signed integer, 'd' for double prec float
     # ultra_arr = Array('i', [0, 0, 0])
 
@@ -39,7 +47,7 @@ def main(x_in, y_in, th_in):
         dt=0.2, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
     controller = RobotController(
         Kp=1.0, Ki=0.15, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
-    planner = TentaclePlanner(dt=0.2, steps=5, alpha=1, beta=1e-5)
+    planner = TentaclePlanner(us, dt=0.2, steps=5, alpha=1, beta=1e-5)
 
     poses = []
     velocities = []
