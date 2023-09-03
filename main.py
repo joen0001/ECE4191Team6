@@ -13,13 +13,9 @@ WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
 # NOTE MAKE ALL GLOBAL MULTITHREAD
 
-<<<<<<< Updated upstream
 
 
 def main(goals):
-=======
-def main(x_in, y_in, th_in):
->>>>>>> Stashed changes
     last_time = time.time()
     # Array [Left, Right]
     last_encoder_steps = [0, 0]
@@ -29,14 +25,18 @@ def main(x_in, y_in, th_in):
     motor_r = Motor(23, 24, 13, 20, 21)
     # Define a motor scaling factor to determine max speed as a fraction of PWM
     motor_speed_scaling = 0.2
-    
+
     # Define ultrasonic sensor class
-    us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
-                          ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
-                          ULT_LEFT_ECHO, ULT_LEFT_TRIG,
-                          ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
-                          ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
-                          threshold=10)
+    # us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
+    #                       ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
+    #                       ULT_LEFT_ECHO, ULT_LEFT_TRIG,
+    #                       ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
+    #                       ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
+    #                       10)
+
+    us = UltrasonicSensor()
+
+
     
     # 'i' for signed integer, 'd' for double prec float
     # ultra_arr = Array('i', [0, 0, 0])
@@ -57,11 +57,14 @@ def main(x_in, y_in, th_in):
     velocities = []
     duty_cycle_commands = []
 
-
-
     for goal in goals:
         goal_x, goal_y, goal_th = goal  # NEEDS CHANGING
         while True:
+
+            print(us.front_distance())
+            print(us.fleft_distance())
+            print(us.fright_distance())
+
             old_encoder_l = motor_l.encoder.steps
             old_encoder_r = motor_r.encoder.steps
             old_time = time.time()
@@ -136,5 +139,6 @@ if __name__ == "__main__":
     # parser.add_argument("--y", type=int, default=10)
     # parser.add_argument("--th", type=float, default=0)
     # args, _ = parser.parse_known_args
-    main([[0.6,-0.6,3*math.pi/2],[0,-0.6,3*math.pi/2]])
+    # main([[0.6,-0.6,3*math.pi/2],[0,-0.6,3*math.pi/2]])
+    main([[0.6,0,0]])
 

@@ -122,6 +122,7 @@ class TentaclePlanner:
         self.left_turning = []
         self.right_turning = []
         self.straight = []
+        self.temp = self.categorize_tentacles()
 
     # Play a trajectory and evaluate where you'd end up
     def roll_out(self,v,w,goal_x,goal_y,goal_th,x,y,th):
@@ -174,7 +175,8 @@ class TentaclePlanner:
         #     print("Path clear!")
         #     # Do regular tentacle cost calculation below...
         
-        modified_tentacles = self.us_sensor.detect_obstacle()
+        cat = self.categorize_tentacles()
+        modified_tentacles = self.us_sensor.detect_obstacle(cat)
         costs = []
         # Provide only free routes as per threshold
         if modified_tentacles is not None:
