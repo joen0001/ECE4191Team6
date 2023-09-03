@@ -122,7 +122,7 @@ class TentaclePlanner:
         self.left_turning = []
         self.right_turning = []
         self.straight = []
-        self.temp = self.categorize_tentacles()
+        self.cat = self.categorize_tentacles()
 
     # Play a trajectory and evaluate where you'd end up
     def roll_out(self,v,w,goal_x,goal_y,goal_th,x,y,th):
@@ -174,22 +174,24 @@ class TentaclePlanner:
         # else:
         #     print("Path clear!")
         #     # Do regular tentacle cost calculation below...
-        
-        cat = self.categorize_tentacles()
-        modified_tentacles = self.us_sensor.detect_obstacle(cat)
+
+        modified_tentacles = self.us_sensor.detect_obstacle(self.cat)
         costs = []
         # Provide only free routes as per threshold
+
         if modified_tentacles is not None:
             for v,w in modified_tentacles:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
-                best_idx = np.argmin(costs)  
-                return modified_tentacles[best_idx]
+                best_idx = np.argmin(costs) 
+            print(modified_tentacles)
+            print(costs) 
+            return modified_tentacles[best_idx]
         # Provide all routes
         else:
             for v,w in self.tentacles:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
                 best_idx = np.argmin(costs)
-                return self.tentacles[best_idx]
+            return self.tentacles[best_idx]
         
         # costs = []
         # Takes each linear and angular velocity and calculates best cost.

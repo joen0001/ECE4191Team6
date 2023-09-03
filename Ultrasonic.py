@@ -2,7 +2,7 @@
 from gpiozero import DistanceSensor
 
 class UltrasonicSensor:
-    def __init__(self, fe=9, ft=10, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, threshold=10):
+    def __init__(self, fe=9, ft=10, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, threshold=20):
         self.sensor_front = DistanceSensor(echo=fe,trigger=ft)
         print("front initialised")
         self.sensor_fright = DistanceSensor(echo=re, trigger=rt)
