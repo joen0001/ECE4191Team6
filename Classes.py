@@ -112,7 +112,8 @@ class TentaclePlanner:
         self.dt = dt
         self.steps = steps
         # Tentacles are possible trajectories to follow
-        self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
+        # self.tentacles = [(0.0,0.5),(0.0,-0.5),(0.1,1.0),(0.1,-1.0),(0.1,0.5),(0.1,-0.5),(0.1,0.0),(0.0,0.0)]
+        self.tentacles = [(0.0,-0.51),(0.0,0.51),(0.1,0.0),(0.1,0.5),(0.1,-0.5)]
         # v,w - (turning in intended direction)
         self.alpha = alpha
         self.beta = beta
@@ -141,9 +142,9 @@ class TentaclePlanner:
     # Categorize tentacles:
     def categorize_tentacles(self):
         for v, w in self.tentacles:
-            if w > 0.1:  # Threshold for left turning
+            if w < -0.5:  # Threshold for left turning
                 self.left_turning.append((v, w))
-            elif w < -0.1:  # Threshold for right turning
+            elif w > 0.5:  # Threshold for right turning
                 self.right_turning.append((v, w))
             else:
                 self.straight.append((v, w))
@@ -178,19 +179,18 @@ class TentaclePlanner:
         modified_tentacles = self.us_sensor.detect_obstacle(self.cat)
         costs = []
         # Provide only free routes as per threshold
-
         if modified_tentacles is not None:
             for v,w in modified_tentacles:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
-                best_idx = np.argmin(costs) 
-            print(modified_tentacles)
-            print(costs) 
+            best_idx = np.argmin(costs) 
+            # print(modified_tentacles)
+            # print(costs) 
             return modified_tentacles[best_idx]
         # Provide all routes
         else:
             for v,w in self.tentacles:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
-                best_idx = np.argmin(costs)
+            best_idx = np.argmin(costs)
             return self.tentacles[best_idx]
         
         # costs = []

@@ -34,7 +34,7 @@ class UltrasonicSensor:
         return self.sensor_fright.distance * 100
 
     def fleft_distance(self):
-        return 100 # self.sensor_fleft.distance * 100
+        return self.sensor_fleft.distance * 100
 
     def right_distance(self):
         return self.sensor_right.distance * 100
@@ -66,28 +66,35 @@ class UltrasonicSensor:
         # if self.counter >= 5:
         if self.outside(front_dist) and self.outside(fleft_dist) and self.outside(fright_dist):
             # Include all tentacle paths
+            print('all')
             avail.extend(categorized_tentacles["left_turning"])
             avail.extend(categorized_tentacles["straight"])
             avail.extend(categorized_tentacles["right_turning"])
         elif self.outside(front_dist) and self.outside(fleft_dist):
             # Include front and left paths
+            print('f+l')
             avail.extend(categorized_tentacles["left_turning"])
-            avail.extend(categorized_tentacles["straight"])
+            # avail.extend(categorized_tentacles["straight"])
         elif self.outside(front_dist) and self.outside(fright_dist):
             # Include front and right paths
-            avail.extend(categorized_tentacles["straight"])
+            print('f+r')
+            # avail.extend(categorized_tentacles["straight"])
             avail.extend(categorized_tentacles["right_turning"])
         elif self.outside(fleft_dist) and self.outside(fright_dist):
             # Include left and right paths
+            print('r+l')
             avail.extend(categorized_tentacles["left_turning"])
-            avail.extend(categorized_tentacles["right_turning"])
+            # avail.extend(categorized_tentacles["right_turning"])
         elif self.outside(front_dist):
+            print('f')
             # Include front path
             avail.extend(categorized_tentacles["straight"])
         elif self.outside(fleft_dist):
+            print('l')
             # Include left path
             avail.extend(categorized_tentacles["left_turning"])
         elif self.outside(fright_dist):
+            print('r')
             # Include right path
             avail.extend(categorized_tentacles["right_turning"])
         else:

@@ -79,6 +79,8 @@ def main(goals):
             v, w = planner.plan(goal_x, goal_y, goal_th,
                                 robot.x, robot.y, robot.th)
 
+            print(f'v: {v}, w: {w}')
+
             duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
             x, y, th = robot.pose_update(
                 [angular_velocity_l, angular_velocity_r])  # NEED TO FIX
@@ -140,5 +142,5 @@ if __name__ == "__main__":
     # parser.add_argument("--th", type=float, default=0)
     # args, _ = parser.parse_known_args
     # main([[0.6,-0.6,3*math.pi/2],[0,-0.6,3*math.pi/2]])
-    main([[0.6,0,0]])
+    main([[1,0,0]])
 
