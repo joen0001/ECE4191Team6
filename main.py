@@ -61,6 +61,8 @@ def main(goals):
         goal_x, goal_y, goal_th = goal  # NEEDS CHANGING
         while True:
 
+            print(us.f1_distance())
+            print(us.f2_distance())
             print(us.front_distance())
             print(us.fleft_distance())
             print(us.fright_distance())
@@ -98,11 +100,31 @@ def main(goals):
             print(f'pose: {poses[-1]}')
             print(f'duty_cycle: {duty_cycle_commands[-1]}')
 
-            if abs(x-goal_x)<0.03 and abs(y-goal_y) < 0.03: # and abs(th-goal_th) < 0.03:
+            if abs(x-goal_x)<0.05 and abs(y-goal_y) < 0.05: # and abs(th-goal_th) < 0.03:
                 motor_l.stop()
                 motor_r.stop()
                 print('arrived')
-                time.sleep(5)
+                time.sleep(3)
+                while abs(th+goal_th) > 0.05:
+                    old_encoder_l = motor_l.encoder.steps
+                    old_encoder_r = motor_r.encoder.steps
+                    old_time = time.time()
+                    time.sleep(0.1)
+                    elapsed_time = time.time()-old_time
+                    angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps-old_encoder_l)/960)/elapsed_time
+                    angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps-old_encoder_r)/960)/elapsed_time
+                    robot.wl = angular_velocity_l
+                    robot.wr = angular_velocity_r
+                    x, y, th = robot.pose_update(
+                    [angular_velocity_l, angular_velocity_r])  # NEED TO FIX
+                    motor_l.drive(-0.15)
+                    motor_r.drive(0.15)
+                    print(f'pose: {poses[-1]}')
+                    poses.append([x, y, th])
+                    print(f'diff {abs(th+goal_th)}')
+                motor_l.stop()
+                motor_r.stop()
+
                 break
 
     plt.plot(np.array(poses)[:,0],np.array(poses)[:,1])
@@ -142,5 +164,6 @@ if __name__ == "__main__":
     # parser.add_argument("--th", type=float, default=0)
     # args, _ = parser.parse_known_args
     # main([[0.6,-0.6,3*math.pi/2],[0,-0.6,3*math.pi/2]])
-    main([[1,0,0]])
+    main([[0.6,-0.6,math.pi],[0,-0.6,math.pi]])
+    # main([[0.6,0,0]])
 

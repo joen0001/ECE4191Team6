@@ -2,9 +2,14 @@
 from gpiozero import DistanceSensor
 
 class UltrasonicSensor:
-    def __init__(self, fe=9, ft=10, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, threshold=20):
-        self.sensor_front = DistanceSensor(echo=fe,trigger=ft)
-        print("front initialised")
+    # def __init__(self, fe=9, ft=10, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, thresholdf=20, thresholdlr=15):
+    def __init__(self, f1e=9, f1t=10, f2e=0, f2t=0, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, thresholdf=20, thresholdlr=15):
+        self.sensor_front1 = DistanceSensor(echo=f1e,trigger=f2t)
+        print("front1 initialised")
+        self.sensor_front2 = DistanceSensor(echo=f1e,trigger=f2t)
+        print("front2 initialised")
+        # self.sensor_front = DistanceSensor(echo=fe,trigger=ft)
+        # print("front initialised")
         self.sensor_fright = DistanceSensor(echo=re, trigger=rt)
         print("right initialised")
         self.sensor_fleft = DistanceSensor(echo=le, trigger=lt)
@@ -12,7 +17,8 @@ class UltrasonicSensor:
         # self.sensor_right = DistanceSensor(bre, brt)
         # self.sensor_left = DistanceSensor(ble, blt)
         # Distance threshold
-        self.threshold = threshold
+        self.thresholdf = thresholdf
+        self.thresholdlr = thresholdlr
         # # Counter to stop noise readings
         # self.counter = counter
         # Tentacle planner function
@@ -20,15 +26,20 @@ class UltrasonicSensor:
         # self.categorized_tentacles = self.tentacle_planner.categorize_tentacles()
         
     # Inside threshold
-    def inside(self, distance): 
-        return distance < self.threshold
+    def inside(self, distance, threshold): 
+        return distance < threshold
     
     # Outside threshold
-    def outside(self, distance):
-        return distance > self.threshold
+    def outside(self, distance, threshold):
+        return distance > threshold
 
-    def front_distance(self):
-        return self.sensor_front.distance * 100
+    # def front_distance(self):
+    #     return self.sensor_front.distance * 100
+    def front1_distance(self):
+        return self.sensor_front1.distance * 100
+    
+    def front2_distance(self):
+        return self.sensor_front2.distance * 100
 
     def fright_distance(self):
         return self.sensor_fright.distance * 100
@@ -43,10 +54,15 @@ class UltrasonicSensor:
         return self.sensor_left.distance * 100
     
     # detect if tentacles are chill, therefore no obstacles, add into array of costs
+
+    def both_front(self, front_dist1, front_dist2, threshold):
+        return (self.outside(front_dist1, threshold) or self.outside(front_dist2, threshold))
     
     def detect_obstacle(self, categorized_tentacles):
         """Returns new required trajectory in order to avoid obstacle as per sensor readings"""
-        front_dist = self.front_distance()
+        front1_dist = self.front1_distance()
+        front2_dist = self.front2_distance()
+        # front_dist = self.front_distance()
         fright_dist = self.fright_distance()
         fleft_dist = self.fleft_distance()
         
@@ -64,36 +80,73 @@ class UltrasonicSensor:
 
         # If distances remain consistently beyond the threshold over several checks
         # if self.counter >= 5:
-        if self.outside(front_dist) and self.outside(fleft_dist) and self.outside(fright_dist):
+        # if self.outside(front_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr) and self.outside(fright_dist, self.thresholdlr):
+        #     # Include all tentacle paths
+        #     print('all')
+        #     avail.extend(categorized_tentacles["left_turning"])
+        #     avail.extend(categorized_tentacles["straight"])
+        #     avail.extend(categorized_tentacles["right_turning"])
+        # elif self.outside(front_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr):
+        #     # Include front and left paths
+        #     print('f+l')
+        #     avail.extend(categorized_tentacles["left_turning"])
+        #     # avail.extend(categorized_tentacles["straight"])
+        # elif self.outside(front_dist, self.thresholdf) and self.outside(fright_dist, self.thresholdlr):
+        #     # Include front and right paths
+        #     print('f+r')
+        #     # avail.extend(categorized_tentacles["straight"])
+        #     avail.extend(categorized_tentacles["right_turning"])
+        # elif self.outside(fleft_dist, self.thresholdlr) and self.outside(fright_dist, self.thresholdlr):
+        #     # Include left and right paths
+        #     print('r+l')
+        #     avail.extend(categorized_tentacles["left_turning"])
+        #     # avail.extend(categorized_tentacles["right_turning"])
+        # elif self.outside(front_dist, self.thresholdf):
+        #     print('f')
+        #     # Include front path
+        #     avail.extend(categorized_tentacles["straight"])
+        # elif self.outside(fleft_dist, self.thresholdlr):
+        #     print('l')
+        #     # Include left path
+        #     avail.extend(categorized_tentacles["left_turning"])
+        # elif self.outside(fright_dist, self.thresholdlr):
+        #     print('r')
+        #     # Include right path
+        #     avail.extend(categorized_tentacles["right_turning"])
+        # else:
+        #     # No clear path, return None
+        #     return None
+
+        if self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr) and self.outside(fright_dist, self.thresholdlr):
             # Include all tentacle paths
             print('all')
             avail.extend(categorized_tentacles["left_turning"])
             avail.extend(categorized_tentacles["straight"])
             avail.extend(categorized_tentacles["right_turning"])
-        elif self.outside(front_dist) and self.outside(fleft_dist):
+        elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr):
             # Include front and left paths
             print('f+l')
             avail.extend(categorized_tentacles["left_turning"])
             # avail.extend(categorized_tentacles["straight"])
-        elif self.outside(front_dist) and self.outside(fright_dist):
+        elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fright_dist, self.thresholdlr):
             # Include front and right paths
             print('f+r')
             # avail.extend(categorized_tentacles["straight"])
             avail.extend(categorized_tentacles["right_turning"])
-        elif self.outside(fleft_dist) and self.outside(fright_dist):
+        elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fright_dist, self.thresholdlr):
             # Include left and right paths
             print('r+l')
             avail.extend(categorized_tentacles["left_turning"])
             # avail.extend(categorized_tentacles["right_turning"])
-        elif self.outside(front_dist):
+        elif self.both_front(front1_dist, front2_dist, self.thresholdf):
             print('f')
             # Include front path
             avail.extend(categorized_tentacles["straight"])
-        elif self.outside(fleft_dist):
+        elif self.outside(fleft_dist, self.thresholdlr):
             print('l')
             # Include left path
             avail.extend(categorized_tentacles["left_turning"])
-        elif self.outside(fright_dist):
+        elif self.outside(fright_dist, self.thresholdlr):
             print('r')
             # Include right path
             avail.extend(categorized_tentacles["right_turning"])
