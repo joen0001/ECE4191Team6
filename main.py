@@ -27,16 +27,12 @@ def main(goals):
     motor_speed_scaling = 0.2
 
     # Define ultrasonic sensor class
-    # us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
-    #                       ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
-    #                       ULT_LEFT_ECHO, ULT_LEFT_TRIG,
-    #                       ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
-    #                       ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
-    #                       10)
-
-    us = UltrasonicSensor()
-
-
+    us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
+                          ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
+                          ULT_LEFT_ECHO, ULT_LEFT_TRIG,
+                          ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
+                          ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
+                          20)
     
     # 'i' for signed integer, 'd' for double prec float
     # ultra_arr = Array('i', [0, 0, 0])
@@ -81,6 +77,7 @@ def main(goals):
             v, w = planner.plan(goal_x, goal_y, goal_th,
                                 robot.x, robot.y, robot.th)
 
+            # Print current v,w:
             print(f'v: {v}, w: {w}')
 
             duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)

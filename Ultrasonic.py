@@ -1,4 +1,4 @@
-# from CONFIG import *
+from CONFIG import *
 from gpiozero import DistanceSensor
 
 class UltrasonicSensor:
@@ -11,9 +11,9 @@ class UltrasonicSensor:
         # self.sensor_front = DistanceSensor(echo=fe,trigger=ft)
         # print("front initialised")
         self.sensor_fright = DistanceSensor(echo=re, trigger=rt)
-        print("right initialised")
+        print("Right sensor initialised...")
         self.sensor_fleft = DistanceSensor(echo=le, trigger=lt)
-        print("left initialised")
+        print("Left sensor initialised...")
         # self.sensor_right = DistanceSensor(bre, brt)
         # self.sensor_left = DistanceSensor(ble, blt)
         # Distance threshold
@@ -66,17 +66,11 @@ class UltrasonicSensor:
         fright_dist = self.fright_distance()
         fleft_dist = self.fleft_distance()
         
-        """TODO call tentacle planner options, best cost within range of movement"""
-        
         # Fresh available options everytime.
         avail = []
         
-        # Counter for distances beyond threshold, check continually clear:
-        # if self.outside(front_dist) or self.outside(fright_dist) or self.outside(fleft_dist):
-        #     self.counter += 1  # Increment the counter
-        # else:
-        #     self.avail = []
-        #     self.counter = 0  # Reset the counter
+        # Future add counter.
+        # Figure out why can't add arrays, check array correctly extended.
 
         # If distances remain consistently beyond the threshold over several checks
         # if self.counter >= 5:
@@ -119,23 +113,23 @@ class UltrasonicSensor:
 
         if self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr) and self.outside(fright_dist, self.thresholdlr):
             # Include all tentacle paths
-            print('all')
+            print('All tentacles')
             avail.extend(categorized_tentacles["left_turning"])
             avail.extend(categorized_tentacles["straight"])
             avail.extend(categorized_tentacles["right_turning"])
         elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr):
             # Include front and left paths
-            print('f+l')
+            print('Front and left tentacles')
             avail.extend(categorized_tentacles["left_turning"])
             # avail.extend(categorized_tentacles["straight"])
         elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fright_dist, self.thresholdlr):
             # Include front and right paths
-            print('f+r')
+            print('Front and right tentacles')
             # avail.extend(categorized_tentacles["straight"])
             avail.extend(categorized_tentacles["right_turning"])
         elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fright_dist, self.thresholdlr):
             # Include left and right paths
-            print('r+l')
+            print('Right and left tentacles')
             avail.extend(categorized_tentacles["left_turning"])
             # avail.extend(categorized_tentacles["right_turning"])
         elif self.both_front(front1_dist, front2_dist, self.thresholdf):
@@ -188,7 +182,7 @@ class UltrasonicSensor:
         #     elif self.inside(fleft_dist):
         #         # TODO: rmove left options and tentacles
         #         return 0.1, -0.5  # move forward and turn right
-
+        
         # # No obstacle detected based on threshold
         # return None, None
     

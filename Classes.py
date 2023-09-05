@@ -66,7 +66,6 @@ class Motor:
         else:
             self.forward(speed)
     
-
 class DiffDriveRobot:  
     def __init__(self, dt=0.1, wheel_radius=28, wheel_sep=220):
         
@@ -82,13 +81,12 @@ class DiffDriveRobot:
         self.r = wheel_radius
         self.l = wheel_sep
     
-
-    
     # Veclocity motion model
     def base_velocity(self,wl,wr):
         
+        # Linear velocity
         v = (wl*self.r + wr*self.r)/2.0
-        
+        # Angular velocity
         w = (wl*self.r - wr*self.r)/self.l
         
         return v, w
@@ -102,8 +100,6 @@ class DiffDriveRobot:
         self.th = self.th + w*self.dt
         
         return self.x, self.y, self.th
-    
-    
         
 class TentaclePlanner:
     
@@ -123,13 +119,13 @@ class TentaclePlanner:
         self.left_turning = []
         self.right_turning = []
         self.straight = []
+        # Categorize tentacles from large tentacle options:
         self.cat = self.categorize_tentacles()
 
     # Play a trajectory and evaluate where you'd end up
     def roll_out(self,v,w,goal_x,goal_y,goal_th,x,y,th):
         
         for j in range(self.steps):
-        
             x = x + self.dt*v*np.cos(th)
             y = y + self.dt*v*np.sin(th)
             th = (th + w*self.dt)
@@ -157,24 +153,14 @@ class TentaclePlanner:
     
     # Choose trajectory that will get you closest to the goal
     def plan(self,goal_x,goal_y,goal_th,x,y,th):
+        """
+        Obstacle avoidance code within planning tentacles
         
-        #front_sensor, left_sensor, right_sensor = Ultrasonic()
+        (v,w) linear velocity (v) and angular velocity (w)
+        
+        Use the sensor data to influence which tentacles are valid,
+        refer to ultrasonic class for obstacle avoidance code.
         """
-        Obstacle avoidance code within planning tentacles, WIP:
-        """
-        # (v,w) linear velocity (v) and angular velocity (w)
-        # Use the sensor data to influence which tentacles are valid, refer to
-        # ultrasonic class for obstacle avoidance code
-         
-        # When created, should update the distances.
-        # us = UltrasonicSensor(threshold=10)
-        # v, w = self.us_sensor.detect_obstacle()
-        # if v is not None and w is not None:
-        #     print(f"Adjusting trajectory: v={v}, w={w}")
-        #     return v,w
-        # else:
-        #     print("Path clear!")
-        #     # Do regular tentacle cost calculation below...
 
         modified_tentacles = self.us_sensor.detect_obstacle(self.cat)
         costs = []
@@ -183,6 +169,7 @@ class TentaclePlanner:
             for v,w in modified_tentacles:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
             best_idx = np.argmin(costs) 
+            # Print tests for tentacles:
             # print(modified_tentacles)
             # print(costs) 
             return modified_tentacles[best_idx]
@@ -192,6 +179,10 @@ class TentaclePlanner:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
             best_idx = np.argmin(costs)
             return self.tentacles[best_idx]
+        
+        """
+        Previous code implementation below:
+        """
         
         # costs = []
         # Takes each linear and angular velocity and calculates best cost.
