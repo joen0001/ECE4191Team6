@@ -56,10 +56,11 @@ def main(goals):
 
     # stuck variables and changes
     # pos_array
-    pos_his = []
-    lowb = 0.05
-    upb = 0.05
-    avg=1000
+    # pos_his = []
+    # lowb = 0.1
+    # upb = 0.1
+    # avg=1000
+
     for goal in goals:
         goal_x, goal_y, goal_th = goal  # NEEDS CHANGING
         while True:
@@ -92,17 +93,6 @@ def main(goals):
                 [angular_velocity_l, angular_velocity_r])  # NEED TO FIX
             
             # obstacle getting stuck code, drive forward if still in same pos
-            pos_his.append((x,y))
-            if len(pos_his) > 22:
-                last_five = pos_his[-20:]
-                avg = sum(y for _, y in last_five) / len(last_five)
-            # compare to current pos
-            if (x-lowb <= avg <= x+upb) and (y-lowb <= avg <= y+upb):
-                motor_l.drive(0.05)
-                motor_r.drive(0.05)
-                pos_his = []
-
-            
             motor_l.drive(duty_cycle_l*motor_speed_scaling)
             motor_r.drive(duty_cycle_r*motor_speed_scaling)
             # Log data
@@ -110,6 +100,38 @@ def main(goals):
             duty_cycle_commands.append([duty_cycle_l, duty_cycle_r])
             velocities.append([robot.wl, robot.wr])
 
+            # pos_his.append((x,y))
+            # print("x:",x)
+            # print("\n")
+            # print("y:",y)
+            # if len(pos_his) > 25:
+            #     print('CHECKING')
+            #     last_five = pos_his[-23:]
+            #     avg = sum(y for _, y in last_five) / len(last_five)
+            # # compare to current pos
+            # if (x-lowb <= avg <= x+upb) and (y-lowb <= avg <= y+upb):
+            #     print('CHANGE DRIVE')
+            #     # Need to change
+            #     # back left
+            #     motor_l.drive(-0.5)
+            #     motor_r.drive(-0.2)
+            #     looptime = time.time()
+            #     while time.time()-looptime<2:
+            #         old_encoder_l = motor_l.encoder.steps
+            #         old_encoder_r = motor_r.encoder.steps
+            #         old_time = time.time()
+            #         time.sleep(0.1)
+            #         elapsed_time = time.time()-old_time
+            #         angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps-old_encoder_l)/960)/elapsed_time
+            #         angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps-old_encoder_r)/960)/elapsed_time
+            #         robot.wl = angular_velocity_l
+            #         robot.wr = angular_velocity_r
+            #         x, y, th = robot.pose_update(
+            #         [angular_velocity_l, angular_velocity_r])  # NEED TO FIX
+            #         motor_l.drive(-0.15)
+            #         motor_r.drive(0.15)
+            #         poses.append([x, y, th])
+            #     pos_his = []
             # print(f'pose: {poses} \n')
             # print(f'duty_cycle: {duty_cycle_commands} \n')
             # print(f'velocities: {velocities} \n')
@@ -117,12 +139,12 @@ def main(goals):
             print(f'pose: {poses[-1]}')
             print(f'duty_cycle: {duty_cycle_commands[-1]}')
 
-            if abs(x-goal_x)<0.05 and abs(y-goal_y) < 0.05: # and abs(th-goal_th) < 0.03:
+            if abs(x-goal_x)<0.03 and abs(y-goal_y) < 0.03: # and abs(th-goal_th) < 0.03:
                 motor_l.stop()
                 motor_r.stop()
                 print('arrived')
                 time.sleep(3)
-                while abs(th+goal_th) > 0.05:
+                while abs(th+goal_th+0.15) > 0.05 and goal_x !=0:
                     old_encoder_l = motor_l.encoder.steps
                     old_encoder_r = motor_r.encoder.steps
                     old_time = time.time()
@@ -141,7 +163,7 @@ def main(goals):
                     print(f'diff {abs(th+goal_th)}')
                 motor_l.stop()
                 motor_r.stop()
-
+                time.sleep(1)
                 break
 
     plt.plot(np.array(poses)[:,0],np.array(poses)[:,1])

@@ -3,7 +3,7 @@ from gpiozero import DistanceSensor
 
 class UltrasonicSensor:
     # def __init__(self, fe=9, ft=10, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, thresholdf=20, thresholdlr=15):
-    def __init__(self, f1e=9, f1t=10, f2e=15, f2t=14, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, thresholdf=20, thresholdlr=15, counter = 0):
+    def __init__(self, f1e=9, f1t=10, f2e=15, f2t=14, re=26, rt=16, le=1, lt=7, bre=0, brt=0, ble=0, blt=0, thresholdf=25, thresholdlr=20, counter = 0):
         self.sensor_front1 = DistanceSensor(echo=f1e,trigger=f1t)
         print("front1 initialised")
         self.sensor_front2 = DistanceSensor(echo=f2e,trigger=f2t)
@@ -56,7 +56,7 @@ class UltrasonicSensor:
     # detect if tentacles are chill, therefore no obstacles, add into array of costs
 
     def both_front(self, front_dist1, front_dist2, threshold):
-        return (self.outside(front_dist1, threshold) or self.outside(front_dist2, threshold))
+        return (self.outside(front_dist1, threshold) and self.outside(front_dist2, threshold))
     
     def detect_obstacle(self, categorized_tentacles):
         """Returns new required trajectory in order to avoid obstacle as per sensor readings"""
@@ -120,9 +120,10 @@ class UltrasonicSensor:
         if self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr) and self.outside(fright_dist, self.thresholdlr):
             # Include all tentacle paths
             print('All tentacles')
-            avail.extend(categorized_tentacles["left_turning"])
+            #avail.extend(categorized_tentacles["left_turning"])
             avail.extend(categorized_tentacles["straight"])
-            avail.extend(categorized_tentacles["right_turning"])
+            #avail.extend(categorized_tentacles["right_turning"])
+            
         elif self.both_front(front1_dist, front2_dist, self.thresholdf) and self.outside(fleft_dist, self.thresholdlr):
             # Include front and left paths
             print('Front and left tentacles')
