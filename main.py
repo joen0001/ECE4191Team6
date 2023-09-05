@@ -86,6 +86,8 @@ def main(goals):
 
             # Print current v,w:
             print(f'v: {v}, w: {w}')
+            print(angular_velocity_l)
+            print(angular_velocity_r)
 
             # main one
             duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
@@ -139,12 +141,12 @@ def main(goals):
             print(f'pose: {poses[-1]}')
             print(f'duty_cycle: {duty_cycle_commands[-1]}')
 
-            if abs(x-goal_x)<0.03 and abs(y-goal_y) < 0.03: # and abs(th-goal_th) < 0.03:
+            if abs(x-goal_x)<0.05 and abs(y-goal_y) < 0.05: # and abs(th-goal_th) < 0.03:
                 motor_l.stop()
                 motor_r.stop()
                 print('arrived')
                 time.sleep(3)
-                while abs(th+goal_th+0.15) > 0.05 and goal_x !=0:
+                while abs(th+goal_th) > 0.05 and goal_x !=0:
                     old_encoder_l = motor_l.encoder.steps
                     old_encoder_r = motor_r.encoder.steps
                     old_time = time.time()
