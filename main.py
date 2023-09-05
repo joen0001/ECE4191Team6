@@ -27,12 +27,13 @@ def main(goals):
     motor_speed_scaling = 0.2
 
     # Define ultrasonic sensor class
-    us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
-                          ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
-                          ULT_LEFT_ECHO, ULT_LEFT_TRIG,
-                          ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
-                          ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
-                          20)
+    # us = UltrasonicSensor(ULT_FRONT_ECHO, ULT_FRONT_TRIG,
+    #                       ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
+    #                       ULT_LEFT_ECHO, ULT_LEFT_TRIG,
+    #                       ULT_BKLEFT_ECHO, ULT_BKLEFT_TRIG,
+    #                       ULT_BKRIGHT_ECHO, ULT_BKRIGHT_TRIG,
+    #                       20)
+    us = UltrasonicSensor()
     
     # 'i' for signed integer, 'd' for double prec float
     # ultra_arr = Array('i', [0, 0, 0])
@@ -53,13 +54,18 @@ def main(goals):
     velocities = []
     duty_cycle_commands = []
 
+    # stuck variables and changes
+    # pos_array
+    pos_his = []
+    lowb = 0.05
+    upb = 0.05
+    avg=1000
     for goal in goals:
         goal_x, goal_y, goal_th = goal  # NEEDS CHANGING
         while True:
 
-            print(us.f1_distance())
-            print(us.f2_distance())
-            print(us.front_distance())
+            print(us.front1_distance())
+            print(us.front2_distance())
             print(us.fleft_distance())
             print(us.fright_distance())
 
@@ -80,9 +86,23 @@ def main(goals):
             # Print current v,w:
             print(f'v: {v}, w: {w}')
 
+            # main one
             duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
             x, y, th = robot.pose_update(
                 [angular_velocity_l, angular_velocity_r])  # NEED TO FIX
+            
+            # obstacle getting stuck code, drive forward if still in same pos
+            pos_his.append((x,y))
+            if len(pos_his) > 22:
+                last_five = pos_his[-20:]
+                avg = sum(y for _, y in last_five) / len(last_five)
+            # compare to current pos
+            if (x-lowb <= avg <= x+upb) and (y-lowb <= avg <= y+upb):
+                motor_l.drive(0.05)
+                motor_r.drive(0.05)
+                pos_his = []
+
+            
             motor_l.drive(duty_cycle_l*motor_speed_scaling)
             motor_r.drive(duty_cycle_r*motor_speed_scaling)
             # Log data
