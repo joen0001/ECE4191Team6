@@ -1,6 +1,6 @@
 import time
 import gpiozero
-from Classes import Motor
+from Classes.Motor import Motor
 import math
 import multiprocessing
 

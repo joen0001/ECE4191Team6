@@ -1,14 +1,15 @@
 from CONFIG import *
-from Classes import Motor, DiffDriveRobot, RobotController, TentaclePlanner
-from Ultrasonic import UltrasonicSensor
+from Classes.RobotController import RobotController
+from Classes.TentaclePlanner import TentaclePlanner
+from Classes.DiffDriveRobot import DiffDriveRobot
+from Classes.Motor import Motor
+from Classes.Ultrasonic import UltrasonicSensor
 # from ShaftEncoder import ShaftEncoder
 import numpy as np
-from multiprocessing import Process, Value, Array
-import gpiozero
 from matplotlib import pyplot as plt
 import time
 import math
-import argparse
+
 WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
 # NOTE MAKE ALL GLOBAL MULTITHREAD
