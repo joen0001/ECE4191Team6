@@ -30,7 +30,7 @@ for letter in range(3):
     for ind in range(4):
         if id == List[letter][ind]:
              Loc = Loc_Ind[letter]
-             Loc_Id = ind
+             Loc_Id = ind+1
 
 print("LOCATION: " + Loc)
 print("ID:" + str(Loc_Id))
