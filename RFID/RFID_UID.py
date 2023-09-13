@@ -1,4 +1,4 @@
-from mrfc522 import BasicMFRC522
+from mfrc522 import BasicMFRC522
 reader = BasicMFRC522()
 
 A1 = 584193570396
