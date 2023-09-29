@@ -10,7 +10,6 @@
 # SCK = 23
 # SDA = 24
 
-
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 

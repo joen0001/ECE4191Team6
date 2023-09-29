@@ -79,15 +79,3 @@ class TentaclePlanner:
                 costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
             best_idx = np.argmin(costs)
             return self.tentacles[best_idx]
-
-        """
-        Previous code implementation below:
-        """
-
-        # costs = []
-        # Takes each linear and angular velocity and calculates best cost.
-        # for v,w in self.tentacles:
-        #     costs.append(self.roll_out(v,w,goal_x,goal_y,goal_th,x,y,th))
-
-        # best_idx = np.argmin(costs)
-        # return self.tentacles[best_idx]

@@ -12,7 +12,6 @@ goal_A = [0.5,0.5,0]
 goal_B = [0.2,0.2,0]
 goal_C = [1,1,0]
 
-
 # Physical Parameters
 WHEEL_SEPARATION = 0.220 #220mm
 WHEEL_RADIUS = 0.028 #28mm
@@ -25,10 +24,16 @@ ANG_THRESHOLD = 0.5
 # ULT_MIN_DIST = 
 # PACKAGEDROP_OFFSET = 
 
-# # Pin Mappings
+# Ultrasonic threshold
+THRESHOLD_F = 20
+THRESHOLD_LR = 15
+
+# Pin Mappings
 # SERVO_PIN = 
-ULT_FRONT_ECHO = 9
-ULT_FRONT_TRIG = 10
+ULT_FRONTL_ECHO = 9
+ULT_FRONTL_TRIG = 10
+ULT_FRONTR_ECHO = 15
+ULT_FRONTR_TRIG = 14
 ULT_RIGHT_ECHO = 26
 ULT_RIGHT_TRIG = 16
 ULT_LEFT_ECHO = 1
