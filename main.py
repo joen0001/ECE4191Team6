@@ -24,8 +24,6 @@ def wall_run(goal):
     controller = RobotController(Kp=1.0, Ki=0.15, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
     waller = WallFollower(us)
     
-    th = 0
-    
     # Data logging
     poses = []
     velocities = []
@@ -38,6 +36,8 @@ def wall_run(goal):
         print_sensor_distances(us)
         elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
+        
+        corner_counter += 1
         
         motor_l.stop()
         motor_r.stop()
@@ -83,8 +83,8 @@ def wall_run(goal):
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
         
         # # drive forward
-        v, w = waller.drive_forward()
-        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        # v, w = waller.drive_forward()
+        # execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
 
         time.sleep(0.1)
 
