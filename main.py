@@ -15,7 +15,7 @@ WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
 MOTOR_SPEED_SCALING = 0.2  # Scaling factor to determine max speed as a fraction of PWM
 
-def wall_run(goals):
+def wall_run(goal):
     last_time = time.time()
     # Initialize Components
     motor_l, motor_r, us = initialize_motors_and_sensors()
@@ -24,10 +24,14 @@ def wall_run(goals):
     controller = RobotController(Kp=1.0, Ki=0.15, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
     waller = WallFollower(us)
     
+    th = 0
+    
     # Data logging
     poses = []
     velocities = []
     duty_cycle_commands = []
+    
+    corner_counter = 0  # Counter to keep track of the number of corners
     th = 0
     # Initial loop to start the wall following
     while True:
@@ -35,48 +39,54 @@ def wall_run(goals):
         elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
         
+        motor_l.stop()
+        motor_r.stop()
+        start_th = th
+        while abs(start_th - th) < math.pi/2:
+            old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
+            time.sleep(0.1)
+            elapsed_time = time.time() - old_time
+            angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps - old_encoder_l) / 960) / elapsed_time
+            angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps - old_encoder_r) / 960) / elapsed_time
+            robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
+            x, y, th = robot.pose_update([angular_velocity_l, angular_velocity_r])
+            motor_l.drive(0.15)
+            motor_r.drive(-0.15)
+            #print(f'pose: {poses[-1]}')
+            poses.append([x, y, th])
+        motor_l.stop()
+        motor_r.stop()
+        time.sleep(1)
+        
+        # Goal B:
+        # TODO: Calculate required distance or use coordinates to ascertain goal B.
+        if corner_counter == 2 and goal == "B" and us.sensor_fright() < 50:
+            drop_package()
+            
+        # Loading bay: 
+        # TODO: Calculate required distance or use coordinates to ascertain loading bay
+        if corner_counter == 4 and us.front1_distance() < 50:
+            loading_bay()
+            break
+    
         # function will check ultrasonic sensors, corner
         # will return None if not at corner, will return 
         v, w = waller.is_at_corner()
         if v is not None:
-            motor_l.stop()
-            motor_r.stop()
-            start_th = th
-            while abs(start_th - th) < math.pi/2:
-                old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
-                time.sleep(0.1)
-                elapsed_time = time.time() - old_time
-                angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps - old_encoder_l) / 960) / elapsed_time
-                angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps - old_encoder_r) / 960) / elapsed_time
-                robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
-                x, y, th = robot.pose_update([angular_velocity_l, angular_velocity_r])
-                motor_l.drive(0.15)
-                motor_r.drive(-0.15)
-                #print(f'pose: {poses[-1]}')
-                poses.append([x, y, th])
-            motor_l.stop()
-            motor_r.stop()
-            time.sleep(1)
+            execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        
+        time.sleep(0.1)
 
         # check to ensure left distance is maintained
         # will go left, right or straight depending on left distance
         v, w = waller.maintain_left_distance()
-        x,y,th=execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
         
         # # drive forward
-        #v, w = waller.drive_forward()
-        #execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        v, w = waller.drive_forward()
+        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
 
         time.sleep(0.1)
-        
-        #if front sensor sees nothing, and left sensor 
-            #drive forward
-        #if front sensor sees nothing and left sensor thinks leaving wall
-            #readjust to left
-        #if front sensor sees nothing and left sensor thinks too close to wal
-            #readjust to right
-        #if front sensor sees something
-            #spin until it thinks 90 degree has past
 
 def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
@@ -84,6 +94,12 @@ def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, veloci
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
     drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)
     return x,y,th  
+
+def drop_package():
+    print("This is where I would drop the package!")
+    
+def loading_bay():
+    print("This is where I wait for my load ;)")
 
 def tentacle_run(goals):
     last_time = time.time()
@@ -226,7 +242,9 @@ def plot_results(poses, goal_x, goal_y, goal_th, x, y, th):
 if __name__ == "__main__":
     goals = [(0.6,-0.6,math.pi),(0,-0.6,math.pi)]
     # tentacle_run(goals)
-    wall_run(goals)
+    # wall_run("A")  # for Goal A
+    # wall_run("B")  # for Goal B
+    # wall_run("C")  # for Goal C
     # tentacle_run(0.3,0.3,0)
 
 
