@@ -28,7 +28,7 @@ def wall_run(goals):
     poses = []
     velocities = []
     duty_cycle_commands = []
-    
+    th = 0
     # Initial loop to start the wall following
     while True:
         print_sensor_distances(us)
@@ -39,18 +39,33 @@ def wall_run(goals):
         # will return None if not at corner, will return 
         v, w = waller.is_at_corner()
         if v is not None:
-            execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-        
-        time.sleep(0.1)
+            motor_l.stop()
+            motor_r.stop()
+            start_th = th
+            while abs(start_th - th) < math.pi/2:
+                old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
+                time.sleep(0.1)
+                elapsed_time = time.time() - old_time
+                angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps - old_encoder_l) / 960) / elapsed_time
+                angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps - old_encoder_r) / 960) / elapsed_time
+                robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
+                x, y, th = robot.pose_update([angular_velocity_l, angular_velocity_r])
+                motor_l.drive(0.15)
+                motor_r.drive(-0.15)
+                #print(f'pose: {poses[-1]}')
+                poses.append([x, y, th])
+            motor_l.stop()
+            motor_r.stop()
+            time.sleep(1)
 
         # check to ensure left distance is maintained
         # will go left, right or straight depending on left distance
         v, w = waller.maintain_left_distance()
-        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        x,y,th=execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
         
         # # drive forward
-        v, w = waller.drive_forward()
-        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        #v, w = waller.drive_forward()
+        #execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
 
         time.sleep(0.1)
         
@@ -67,7 +82,8 @@ def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, veloci
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
     x, y, th = robot.pose_update([robot.wl, robot.wr])
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
-    drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)   
+    drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)
+    return x,y,th  
 
 def tentacle_run(goals):
     last_time = time.time()
@@ -126,7 +142,7 @@ def initialize_motors_and_sensors():
 
 def print_sensor_distances(us):
     """Prints the distances detected by the ultrasonic sensors."""
-    print(us.front1_distance(), us.front2_distance(), us.fleft_distance(), us.fright_distance())
+    #print(us.front1_distance(), us.front2_distance(), us.fleft_distance())
 
 
 def compute_velocities(motor_l, motor_r, last_time):

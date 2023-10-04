@@ -24,7 +24,17 @@ class UltrasonicSensor:
 
     # Helper method to calculate distance
     def _calculate_distance(self, sensor):
-        return sensor.distance * 100
+        return sensor.distance
+    
+    def fleft_distance(self):
+        fleft_dist = self._calculate_distance(self.sensor_fleft)
+        return fleft_dist
+    def front1_distance(self):
+        front1_dist = self._calculate_distance(self.sensor_front1)
+        return front1_dist
+    def front2_distance(self):
+        front2_dist = self._calculate_distance(self.sensor_front2)
+        return front2_dist
 
     # Method to check if the distance is inside the threshold
     def inside(self, distance, threshold):

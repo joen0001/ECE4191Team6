@@ -12,22 +12,26 @@ class WallFollower:
         return self.forward_speed,0 
         
     def maintain_left_distance(self):
-        left_distance = self.sensor_left.fleft_distance()
+        left_distance = self.us_sensor.fleft_distance()
+        print(left_distance)
         # Drive forward only if the left distance is between 20 and 30 cm.
-        if 5 < left_distance < 10:
-            return self.drive_forward
+        if 0.08 < left_distance < 0.11:
+            print('f')
+            return 0.1,0
         # Return turn left (-)
-        elif (left_distance > 10) and (left_distance < 20):
-            return 0.1, -np.pi/12
+        elif (left_distance > 0.11):
+            print('l')
+            return 0.1, -np.pi/24
         # Return turn right (+)
-        elif (left_distance < 5):
-            return 0.1, np.pi/12
+        elif (left_distance < 0.08):
+            print('r')
+            return 0.1, np.pi/24
 
     def is_at_corner(self):
         # Assuming 20 as the distance in cm to detect corner/wall.
-        if self.us_sensor.front1_distance() < 5 or self.us_sensor.front2_distance() < 5 and self.us_sensor.fleft_distance() < 5:
+        if self.us_sensor.front1_distance() < 0.15 or self.us_sensor.front2_distance() < 0.15:
             # 90 degree turn right
-            return 0, 0.5
+            return 0, 0
             # return 0,-np.pi/2
         else:
             return None, None
