@@ -1,5 +1,6 @@
 from CONFIG import *
 from Classes.RobotController import RobotController
+from Classes.WallFollower import WallFollower
 from Classes.TentaclePlanner import TentaclePlanner
 from Classes.DiffDriveRobot import DiffDriveRobot
 from Classes.Motor import Motor
@@ -14,7 +15,61 @@ WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
 MOTOR_SPEED_SCALING = 0.2  # Scaling factor to determine max speed as a fraction of PWM
 
-def main(goals):
+def wall_run(goals):
+    last_time = time.time()
+    # Initialize Components
+    motor_l, motor_r, us = initialize_motors_and_sensors()
+    # Establishing new classes:
+    robot = DiffDriveRobot(dt=0.1, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
+    controller = RobotController(Kp=1.0, Ki=0.15, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
+    waller = WallFollower(us)
+    
+    # Data logging
+    poses = []
+    velocities = []
+    duty_cycle_commands = []
+    
+    # Initial loop to start the wall following
+    while True:
+        print_sensor_distances(us)
+        elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
+        robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
+        
+        # function will check ultrasonic sensors, corner
+        # will return None if not at corner, will return 
+        v, w = waller.is_at_corner()
+        if v is not None:
+            execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        
+        time.sleep(0.1)
+
+        # check to ensure left distance is maintained
+        # will go left, right or straight depending on left distance
+        v, w = waller.maintain_left_distance()
+        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        
+        # # drive forward
+        v, w = waller.drive_forward()
+        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+
+        time.sleep(0.1)
+        
+        #if front sensor sees nothing, and left sensor 
+            #drive forward
+        #if front sensor sees nothing and left sensor thinks leaving wall
+            #readjust to left
+        #if front sensor sees nothing and left sensor thinks too close to wal
+            #readjust to right
+        #if front sensor sees something
+            #spin until it thinks 90 degree has past
+
+def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
+    duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
+    x, y, th = robot.pose_update([robot.wl, robot.wr])
+    log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
+    drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)   
+
+def tentacle_run(goals):
     last_time = time.time()
     last_encoder_steps = [0, 0]  # Array [Left, Right]
 
@@ -154,5 +209,8 @@ def plot_results(poses, goal_x, goal_y, goal_th, x, y, th):
 
 if __name__ == "__main__":
     goals = [(0.6,-0.6,math.pi),(0,-0.6,math.pi)]
-    main(goals)
+    # tentacle_run(goals)
+    wall_run(goals)
+    # tentacle_run(0.3,0.3,0)
+
 
