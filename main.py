@@ -36,28 +36,6 @@ def wall_run(goal):
         print_sensor_distances(us)
         elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
-        
-        corner_counter += 1
-        
-        motor_l.stop()
-        motor_r.stop()
-        start_th = th
-        while abs(start_th - th) < math.pi/2:
-            old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
-            time.sleep(0.1)
-            elapsed_time = time.time() - old_time
-            angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps - old_encoder_l) / 960) / elapsed_time
-            angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps - old_encoder_r) / 960) / elapsed_time
-            robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
-            x, y, th = robot.pose_update([angular_velocity_l, angular_velocity_r])
-            motor_l.drive(0.15)
-            motor_r.drive(-0.15)
-            #print(f'pose: {poses[-1]}')
-            poses.append([x, y, th])
-        motor_l.stop()
-        motor_r.stop()
-        time.sleep(1)
-        
         # Goal B:
         # TODO: Calculate required distance or use coordinates to ascertain goal B.
         if corner_counter == 2 and goal == "B" and us.sensor_fright() < 50:
@@ -73,19 +51,37 @@ def wall_run(goal):
         # will return None if not at corner, will return 
         v, w = waller.is_at_corner()
         if v is not None:
-            execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-        
-        time.sleep(0.1)
-
+            motor_l.stop()
+            motor_r.stop()
+            corner_counter += 1
+            start_th = th
+            print('TURNING')
+            print('TURNING')
+            print('TURNING')
+            print('TURNING')
+            print('TURNING')
+            while abs(start_th - th) < math.pi/2.15:
+                old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
+                time.sleep(0.1)
+                elapsed_time = time.time() - old_time
+                angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps - old_encoder_l) / 960) / elapsed_time
+                angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps - old_encoder_r) / 960) / elapsed_time
+                robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
+                x, y, th = robot.pose_update([angular_velocity_l, angular_velocity_r])
+                motor_l.drive(0.15)
+                motor_r.drive(-0.15)
+                #print(f'pose: {poses[-1]}')
+                poses.append([x, y, th])
         # check to ensure left distance is maintained
         # will go left, right or straight depending on left distance
         v, w = waller.maintain_left_distance()
+        print(w)
+        print('/n desired w'+str(w))
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
         
         # # drive forward
         # v, w = waller.drive_forward()
         # execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-
         time.sleep(0.1)
 
 def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
@@ -242,7 +238,7 @@ def plot_results(poses, goal_x, goal_y, goal_th, x, y, th):
 if __name__ == "__main__":
     goals = [(0.6,-0.6,math.pi),(0,-0.6,math.pi)]
     # tentacle_run(goals)
-    # wall_run("A")  # for Goal A
+    wall_run("A")  # for Goal A
     # wall_run("B")  # for Goal B
     # wall_run("C")  # for Goal C
     # tentacle_run(0.3,0.3,0)
