@@ -10,7 +10,19 @@ class WallFollower:
 
     def drive_forward(self):
         return self.forward_speed,0 
-        
+
+    def maintain_left_distance(self,previousAngle,integA):
+        left2_distance = self.us_sensor.fleft_distance()
+        left_distance = self.us_sensor.front1_distance()
+        #front_distance = self.us_sensor.front2_distance()
+        angle = left_distance-left2_distance
+        derivativeA = angle - previousAngle
+        integA = integA+angle
+        outputA = 12*angle +4*derivativeA+0.01*integA
+        print('Angle:'+str(10*angle)+'Der'+str(5*derivativeA)+'IntegA'+str(0.01*integA))
+        #print(outputA)
+        return 0.1, -outputA,angle,integA
+    ''''
     def maintain_left_distance(self):
         left2_distance = self.us_sensor.fleft_distance()
         left_distance = self.us_sensor.front1_distance()
@@ -24,13 +36,13 @@ class WallFollower:
         #print('Distance Sensor'+str(min(left_distance,left2_distance)))
         if (left_distance<0.055):
             print('RIGHT')
-            return 0.1, (0.055-left_distance)*5
-        elif (left2_distance>0.065):
+            return 0.1, (0.055-left_distance)*7
+        elif (left2_distance>0.06):
             print('LEFT')
-            return 0.1, -(left_distance-0.065)*2.1
+            return 0.1, -(left_distance-0.06)*2.1
         else:
-            return 0.1,0
-        ''''
+            return 0.2,0
+        
         
         if (left_distance>threshold and left2_distance<threshold):
             print('LEFT')
@@ -58,7 +70,7 @@ class WallFollower:
         '''
     def is_at_corner(self):
         # Assuming 20 as the distance in cm to detect corner/wall.
-        if self.us_sensor.front2_distance() < 0.12:
+        if self.us_sensor.front2_distance() < 0.122:
             # 90 degree turn right
             return 0, 0
             # return 0,-np.pi/2

@@ -28,9 +28,13 @@ def wall_run(goal):
     poses = []
     velocities = []
     duty_cycle_commands = []
-    
+    previousAngle = 0
+    integA = 0
     corner_counter = 0  # Counter to keep track of the number of corners
     th = 0
+
+    x_wall = 0
+    y_wall = 0
     # Initial loop to start the wall following
     while True:
         print_sensor_distances(us)
@@ -43,9 +47,9 @@ def wall_run(goal):
             
         # Loading bay: 
         # TODO: Calculate required distance or use coordinates to ascertain loading bay
-        if corner_counter == 4 and us.front1_distance() < 50:
-            loading_bay()
-            break
+        #if corner_counter == 4 and us.front1_distance() < 50:
+        #    loading_bay()
+        #    break
     
         # function will check ultrasonic sensors, corner
         # will return None if not at corner, will return 
@@ -60,7 +64,7 @@ def wall_run(goal):
             print('TURNING')
             print('TURNING')
             print('TURNING')
-            while abs(start_th - th) < math.pi/2.15:
+            while abs(start_th - th) < math.pi/2.22:
                 old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
                 time.sleep(0.1)
                 elapsed_time = time.time() - old_time
@@ -72,21 +76,14 @@ def wall_run(goal):
                 motor_r.drive(-0.15)
                 #print(f'pose: {poses[-1]}')
                 poses.append([x, y, th])
-        # check to ensure left distance is maintained
-        # will go left, right or straight depending on left distance
-        v, w = waller.maintain_left_distance()
-        print(w)
-        print('/n desired w'+str(w))
+        v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-        
-        # # drive forward
-        # v, w = waller.drive_forward()
-        # execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-        time.sleep(0.1)
+        time.sleep(0.05)
 
 def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
     x, y, th = robot.pose_update([robot.wl, robot.wr])
+    print('x:'+str(x)+'y:'+str(y)+'theta:'+str(th))
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
     drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)
     return x,y,th  
