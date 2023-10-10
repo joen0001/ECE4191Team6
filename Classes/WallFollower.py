@@ -68,6 +68,7 @@ class WallFollower:
         #    print('LEFT')
         #    return 0.1, -(min_dist-threshold)*2.1
         '''
+        
     def is_at_corner(self):
         # Assuming 20 as the distance in cm to detect corner/wall.
         if self.us_sensor.front2_distance() < 0.122:
