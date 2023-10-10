@@ -32,7 +32,8 @@ def wall_run(goal):
     integA = 0
     corner_counter = 0  # Counter to keep track of the number of corners
     th = 0
-
+    x=0
+    y=0
     x_wall = 0
     y_wall = 0
     # Initial loop to start the wall following
@@ -42,8 +43,7 @@ def wall_run(goal):
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
         # Goal B:
         # TODO: Calculate required distance or use coordinates to ascertain goal B.
-        if corner_counter == 2 and goal == "B" and us.sensor_fright() < 50:
-            drop_package()
+        
             
         # Loading bay: 
         # TODO: Calculate required distance or use coordinates to ascertain loading bay
@@ -76,8 +76,37 @@ def wall_run(goal):
                 motor_r.drive(-0.15)
                 #print(f'pose: {poses[-1]}')
                 poses.append([x, y, th])
+                x_wall = x
         v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        print('corner_counter:'+str(corner_counter))
+
+        print(x_wall-poses[-1][0])
+        if corner_counter%4==2 and goal == 'A':
+            #and front_sensor <0.5
+            motor_l.stop()
+            motor_r.stop()
+            time.sleep(3)
+            print('HI')
+            goal = ""
+            #drop_package()
+
+        if x_wall-poses[-1][0]>0.25 and corner_counter%4==2 and goal == 'B':
+            #and front_sensor <0.5
+            motor_l.stop()
+            motor_r.stop()
+            time.sleep(3)
+            print('HI')
+            goal = "A"
+            #drop_package()
+        if x_wall-poses[-1][0]>0.5 and corner_counter%4==2 and goal == 'C':
+            #and front_sensor <0.5
+            motor_l.stop()
+            motor_r.stop()
+            time.sleep(3)
+            print('HI')
+            goal = "B"
+            #drop_package()
         time.sleep(0.05)
 
 def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
@@ -235,7 +264,7 @@ def plot_results(poses, goal_x, goal_y, goal_th, x, y, th):
 if __name__ == "__main__":
     goals = [(0.6,-0.6,math.pi),(0,-0.6,math.pi)]
     # tentacle_run(goals)
-    wall_run("A")  # for Goal A
+    wall_run("C")  # for Goal A
     # wall_run("B")  # for Goal B
     # wall_run("C")  # for Goal C
     # tentacle_run(0.3,0.3,0)
