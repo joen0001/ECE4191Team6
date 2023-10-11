@@ -25,3 +25,4 @@ if __name__ == "__main__":
 
         print(f'angular_l: {angular_velocity_l}')
         print(f'angular_r: {angular_velocity_r}')
+        print(angular_velocity_r-angular_velocity_l)

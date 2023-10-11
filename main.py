@@ -9,13 +9,41 @@ import numpy as np
 import time
 import math
 from matplotlib import pyplot as plt
+import multiprocessing
+import socket
 
 # Constants
 WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
 MOTOR_SPEED_SCALING = 0.2  # Scaling factor to determine max speed as a fraction of PWM
 
+arr = multiprocessing.Array('d', [0.0,0.0,0.0])
+
+def do_bluetooth(arr):
+    s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+    host_address = 'D8:3A:DD:21:87:12' #Fill in host mac address here
+    s.bind((host_address,1))
+
+    s.listen(1)
+    try:
+        client, address = s.accept()
+        while 1:
+            data = client.recv(1024)
+            if data:
+                print ('Their arr:', np.frombuffer(data))
+            client.send(np.array(arr).tobytes())
+        
+            time.sleep(1)
+    except:
+        print("Closing socket")
+        client.close()
+        s.close()
+
 def wall_run(goal):
+
+    # p = multiprocessing.Process(target=do_bluetooth, args=(arr,))
+    # p.start()
+
     last_time = time.time()
     # Initialize Components
     motor_l, motor_r, us = initialize_motors_and_sensors()
@@ -77,11 +105,11 @@ def wall_run(goal):
                 #print(f'pose: {poses[-1]}')
                 poses.append([x, y, th])
                 x_wall = x
-        v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
+        v, w,previsousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-        print('corner_counter:'+str(corner_counter))
+        #print('corner_counter:'+str(corner_counter))
 
-        print(x_wall-poses[-1][0])
+        #print(x_wall-poses[-1][0])
         if corner_counter%4==2 and goal == 'A':
             #and front_sensor <0.5
             motor_l.stop()
@@ -112,6 +140,9 @@ def wall_run(goal):
 def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
     x, y, th = robot.pose_update([robot.wl, robot.wr])
+    arr[0] = x
+    arr[1] = y
+    arr[2] = th
     print('x:'+str(x)+'y:'+str(y)+'theta:'+str(th))
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
     drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)
