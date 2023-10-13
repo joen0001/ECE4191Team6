@@ -1,13 +1,14 @@
 import time
 import gpiozero
+from CONFIG import *
 from Classes.Motor import Motor
 import math
 import multiprocessing
 
 if __name__ == "__main__":
     # Initialise the Motors and Encoders
-    motor_l = Motor(5, 6, 12,17,27)
-    motor_r = Motor(23, 24, 13, 20, 21)
+    motor_l = Motor(MOTOR_L_FORWARD, MOTOR_L_BACKWARD, MOTOR_L_ENABLE, ROTENC_LEFT_A, ROTENC_LEFT_B)
+    motor_r = Motor(MOTOR_R_FORWARD, MOTOR_R_BACKWARD, MOTOR_R_ENABLE, ROTENC_RIGHT_A, ROTENC_RIGHT_B)
     # Define a motor scaling factor to determine max speed as a fraction of PWM
     motor_speed_scaling = 0.3
 
@@ -25,4 +26,4 @@ if __name__ == "__main__":
 
         print(f'angular_l: {angular_velocity_l}')
         print(f'angular_r: {angular_velocity_r}')
-        print(angular_velocity_r-angular_velocity_l)
+        #print(angular_velocity_r-angular_velocity_l)
