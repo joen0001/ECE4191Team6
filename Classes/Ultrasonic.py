@@ -2,42 +2,40 @@ from CONFIG import *
 from gpiozero import DistanceSensor
 
 class UltrasonicSensor:
-    def __init__(self, f1e, f1t, f2e, f2t, re, rt, le, lt, thresholdf, thresholdlr):
+    def __init__(self, f1e, f1t, f2e, f2t, le, lt):
 
         # Initializing Front Sensors
-        self.sensor_front1 = DistanceSensor(echo=f1e, trigger=f1t)
+        self.sensor_front = DistanceSensor(echo=f1e, trigger=f1t)
         print("Front left sensor initialised...")
 
-        self.sensor_front2 = DistanceSensor(echo=f2e, trigger=f2t)
+        self.sensor_sfront = DistanceSensor(echo=f2e, trigger=f2t)
         print("Front right sensor initialised...")
 
         # Initializing Right and Left Sensors
-        self.sensor_fright = DistanceSensor(echo=re, trigger=rt)
-        print("Right sensor initialised...")
-
-        self.sensor_fleft = DistanceSensor(echo=le, trigger=lt)
+        self.sensor_sback = DistanceSensor(echo=le, trigger=lt)
         print("Left sensor initialised...")
 
         # Initializing thresholds
-        self.thresholdf = thresholdf
-        self.thresholdlr = thresholdlr
+        #self.thresholdf = thresholdf
+        #self.thresholdlr = thresholdlr
 
     # Helper method to calculate distance
     def _calculate_distance(self, sensor):
         return sensor.distance
     
-    def fleft_distance(self):
-        fleft_dist = self._calculate_distance(self.sensor_fleft)
+    def front_distance(self):
+        fleft_dist = self._calculate_distance(self.sensor_front)
         return fleft_dist
     
-    def front1_distance(self):
-        front1_dist = self._calculate_distance(self.sensor_front1)
+    def sidefront_distance(self):
+        front1_dist = self._calculate_distance(self.sensor_sfront)
         return front1_dist
     
-    def front2_distance(self):
-        front2_dist = self._calculate_distance(self.sensor_front2)
+    def sideback_distance(self):
+        front2_dist = self._calculate_distance(self.sensor_sback)
         return front2_dist
 
+    ''''
     # Method to check if the distance is inside the threshold
     def inside(self, distance, threshold):
         return distance < threshold
@@ -96,4 +94,4 @@ class UltrasonicSensor:
 
         return avail
 
-    
+    '''

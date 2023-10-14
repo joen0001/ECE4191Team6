@@ -66,7 +66,6 @@ def wall_run(goal):
     y_wall = 0
     # Initial loop to start the wall following
     while True:
-        print_sensor_distances(us)
         elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
         # Goal B:
@@ -105,7 +104,7 @@ def wall_run(goal):
                 #print(f'pose: {poses[-1]}')
                 poses.append([x, y, th])
                 x_wall = x
-        v, w,previsousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
+        v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
         #print('corner_counter:'+str(corner_counter))
 
@@ -145,7 +144,7 @@ def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, veloci
     arr[2] = th
     print('x:'+str(x)+'y:'+str(y)+'theta:'+str(th))
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
-    drive_motors(motor_l, motor_r, duty_cycle_l, duty_cycle_r, MOTOR_SPEED_SCALING)
+    drive_motors(motor_l, motor_r, duty_cycle_l+0.025, duty_cycle_r, MOTOR_SPEED_SCALING)
     return x,y,th  
 
 def drop_package():
@@ -196,15 +195,14 @@ def tentacle_run(goals):
     
 def initialize_motors_and_sensors():
     """Initializes motors, encoders, and ultrasonic sensors."""
-    motor_l = Motor(5, 6, 12, 17, 27)
-    motor_r = Motor(23, 24, 13, 20, 21)
+    motor_l = Motor(MOTOR_L_FORWARD, MOTOR_L_BACKWARD, MOTOR_L_ENABLE, ROTENC_LEFT_A, ROTENC_LEFT_B)
+    motor_r = Motor(MOTOR_R_FORWARD, MOTOR_R_BACKWARD, MOTOR_R_ENABLE, ROTENC_RIGHT_A, ROTENC_RIGHT_B)
 
     # Define ultrasonic sensor class
-    us = UltrasonicSensor(ULT_FRONTL_ECHO, ULT_FRONTL_TRIG,
-                          ULT_FRONTR_ECHO, ULT_FRONTR_TRIG,
-                          ULT_RIGHT_ECHO, ULT_RIGHT_TRIG,
-                          ULT_LEFT_ECHO, ULT_LEFT_TRIG,
-                          THRESHOLD_F, THRESHOLD_LR)
+    us = UltrasonicSensor(ULT_FRONT_ECHO,ULT_FRONT_TRIG,
+                          ULT_SIDEFRONT_ECHO,ULT_SIDEFRONT_TRIG,
+                          ULT_SIDEBACK_ECHO, ULT_SIDEBACK_TRIG,
+                          )
 
     return motor_l, motor_r, us 
 

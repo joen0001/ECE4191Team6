@@ -23,15 +23,15 @@ class Ultra:
 #backleft 
 sensor_F = DistanceSensor(echo=ULT_FRONT_ECHO, trigger=ULT_FRONT_TRIG)
 #frontleft 
-sensor_SF = DistanceSensor(echo=ULT_SIDEFRONT_ECHO, trigger=ULT_SIDEFRONT_TRIG)
+#sensor_SF = DistanceSensor(echo=ULT_SIDEFRONT_ECHO, trigger=ULT_SIDEFRONT_TRIG)
 #front one
-sensor_SB = DistanceSensor(echo=ULT_SIDEBACK_ECHO, trigger=ULT_SIDEBACK_TRIG)
+#sensor_SB = DistanceSensor(echo=ULT_SIDEBACK_ECHO, trigger=ULT_SIDEBACK_TRIG)
 
 #sensor_new_m = Ultra(echo=26, trigger = 16)
 while True:
     print('Distance_F: ', sensor_F.distance * 100)
-    print('Distance_SF: ', sensor_SF.distance * 100)
-    print('Distance_SB: ', sensor_SB.distance * 100)
+    #print('Distance_SF: ', sensor_SF.distance * 100)
+    #print('Distance_SB: ', sensor_SB.distance * 100)
     #print('Distance_M_new: ', sensor_new_m.distance() * 100)
     sleep(0.1)
     

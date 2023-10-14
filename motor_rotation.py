@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # Define a motor scaling factor to determine max speed as a fraction of PWM
     motor_speed_scaling = 0.3
 
-    motor_l.drive(0.3)
+    motor_l.drive(0.325)
     motor_r.drive(0.3)
 
     while True:

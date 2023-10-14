@@ -51,15 +51,12 @@ class WallFollower:
     #         return 0.1, 0
 
     def maintain_left_distance(self,previousAngle,integA):
-        left2_distance = self.us_sensor.fleft_distance()
-        left_distance = self.us_sensor.front1_distance()
-        #front_distance = self.us_sensor.front2_distance()
+        left_distance = self.us_sensor.sidefront_distance()
+        left2_distance = self.us_sensor.sideback_distance()
         angle = left_distance-left2_distance
         derivativeA = angle - previousAngle
         integA = integA+angle
-        outputA = 10*angle +5*derivativeA+0.01*integA-0.1
-        #print('Angle:'+str(10*angle)+'Der'+str(5*derivativeA)+'IntegA'+str(0.001*integA))
-        print(outputA)
+        outputA = 12*angle +4*derivativeA+0.01*integA
         return 0.1, -outputA,angle,integA
     ''''
     def maintain_left_distance(self):
@@ -110,7 +107,7 @@ class WallFollower:
         
     def is_at_corner(self):
         # Assuming 20 as the distance in cm to detect corner/wall.
-        if self.us_sensor.front2_distance() < 0.122:
+        if self.us_sensor.front_distance() < 0.122:
             # 90 degree turn right
             return 0, 0
             # return 0,-np.pi/2
