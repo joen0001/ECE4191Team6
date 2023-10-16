@@ -35,6 +35,7 @@ class DiffDriveRobot:
         self.y = self.y + (end-start)*v*np.sin(self.th)
         self.th = self.th + w*self.dt
         start = time.process_time()
+        print(f'x: {self.x}' f'y: {self.y}' f'th: {self.th}'f'start: {start}'f'end: {end}')
               
         return self.x, self.y, self.th,start
         '''
