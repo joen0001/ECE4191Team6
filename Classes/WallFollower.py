@@ -58,7 +58,6 @@ class WallFollower:
         derivativeA = angle - previousAngle
         integA = integA+angle
         outputA = 10*angle +5*derivativeA+0.001*integA
-        print(angle)
         return 0.1, -outputA,angle,integA
     ''''
     def maintain_left_distance(self):

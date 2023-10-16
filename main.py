@@ -64,12 +64,13 @@ def wall_run(goal):
     x=0
     y=0
     y_wall = 0
+    x_wall=0
     print('waiting for Beep')
     goal = rfid.BEEP()
     print('beep received')
     start = 0
     while True:
-        elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
+        angular_velocity_l, angular_velocity_r,start,x,y,th = compute_velocities(motor_l, motor_r, start,robot)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
         # Goal B:
         # TODO: Calculate required distance or use coordinates to ascertain goal B.
@@ -104,7 +105,7 @@ def wall_run(goal):
             print('TURNING into corner'+str(corner_counter%4))
             print('TURNING into corner'+str(corner_counter%4))
             print('TURNING into corner'+str(corner_counter%4))
-            while abs(start_th - th) < math.pi/2.3:
+            while abs(start_th - th) < math.pi/2.45:
                 old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
                 time.sleep(0.1)
                 elapsed_time = time.time() - old_time
@@ -117,6 +118,7 @@ def wall_run(goal):
                 #print(f'pose: {poses[-1]}')
                 poses.append([x, y, th])
                 y_wall = y
+                x_wall = x
             if corner_counter%4==0:
                 motor_l.stop()
                 motor_r.stop()
@@ -131,11 +133,8 @@ def wall_run(goal):
                 print('A')
                 goal = ""
         v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
-        x,y,th,start = execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING,start)
-
-        #print('corner_counter:'+str(corner_counter))
-        print('y' +str(poses[-1][1])+'     y_wall'+str(y_wall)+'    diff:'+str(poses[-1][1]-y_wall))
-        if abs(poses[-1][1]-y_wall)>0.15 and corner_counter%4==1 and goal == 'B':
+        x,y,th= execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING,x,y,th)
+        if abs(((poses[-1][0]-x_wall)**2+(poses[-1][1]-y_wall)**2)**0.5)>0.375 and corner_counter%4==1 and goal == 'B':
             #and front_sensor <0.5
             motor_l.stop()
             motor_r.stop()
@@ -148,16 +147,14 @@ def wall_run(goal):
             #drop_package()
         time.sleep(0.1)
 
-def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING,start):
+def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING,x,y,th):
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
-    x, y, th,start = robot.pose_update([robot.wl, robot.wr],start)
     arr[0] = x
     arr[1] = y
     arr[2] = th
-    print(f'x: {x}' f'y: {y}' f'th: {th}'f'start: {start}')
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
     drive_motors(motor_l, motor_r, duty_cycle_l+0.025, duty_cycle_r, MOTOR_SPEED_SCALING)
-    return x,y,th,start
+    return x,y,th
 
 def drop_package():
     print("This is where I would drop the package!")
@@ -225,14 +222,16 @@ def print_sensor_distances(us):
     #print(us.front1_distance(), us.front2_distance(), us.fleft_distance())
 
 
-def compute_velocities(motor_l, motor_r, last_time):
+def compute_velocities(motor_l, motor_r, start,diffdrive):
     """Computes and returns elapsed time and angular velocities."""
     old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
     time.sleep(0.1)
     elapsed_time = time.time()-old_time
-    angular_velocity_l = 2*math.pi*((motor_l.encoder.steps-old_encoder_l)/960)/elapsed_time
-    angular_velocity_r = 2*math.pi*((motor_r.encoder.steps-old_encoder_r)/960)/elapsed_time
-    return elapsed_time, angular_velocity_l, angular_velocity_r
+    angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps-old_encoder_l)/960)/elapsed_time
+    angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps-old_encoder_r)/960)/elapsed_time
+    x,y,th,start = diffdrive.pose_update([angular_velocity_l, angular_velocity_r],start)
+    print(f'x: {x}' f'y: {y}' f'th: {th}'f'start: {start}')
+    return angular_velocity_l, angular_velocity_r,start,x,y,th
 
 
 def print_velocity(v, w, angular_velocity_l, angular_velocity_r):
