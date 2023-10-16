@@ -106,11 +106,13 @@ class WallFollower:
         #    return 0.1, -(min_dist-threshold)*2.1
         '''
         
-    def is_at_corner(self):
+    def is_at_corner(self, abs_dist):
         # Assuming 20 as the distance in cm to detect corner/wall.
-        if self.us_sensor.front_distance() < 0.122:
+        if self.us_sensor.front_distance() < 0.122 and abs_dist<0.8:
             # 90 degree turn right
-            return 0, 0
+            return 0
+        elif self.us_sensor.front_distance() < 0.122 and abs_dist>0.8:
+            return 1
             # return 0,-np.pi/2
         else:
-            return None, None
+            return 2

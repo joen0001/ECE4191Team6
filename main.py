@@ -84,12 +84,16 @@ def wall_run(goal):
     
         # function will check ultrasonic sensors, corner
         # will return None if not at corner, will return 
-        v, w = waller.is_at_corner()
-        if v is not None:
+        movement = waller.is_at_corner(((poses[-1][0]-x_wall)**2+(poses[-1][1]-y_wall)**2)**0.5)
+        if movement is 1:
+            while movement is 1:
+                motor_l.stop()
+                motor_l.stop()
+                movement = waller.is_at_corner(((poses[-1][0]-x_wall)**2+(poses[-1][1]-y_wall)**2)**0.5)
+        if movement is 0:
             motor_l.stop()
             motor_r.stop()
             corner_counter += 1
-            
             start_th = th
             if corner_counter%4==2 and goal=='C':
                 motor_l.stop()
