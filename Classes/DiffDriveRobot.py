@@ -2,7 +2,7 @@ import numpy as np
 
 
 class DiffDriveRobot:
-    def __init__(self, dt=0.05, wheel_radius=28, wheel_sep=220):
+    def __init__(self, dt=0.1, wheel_radius=28, wheel_sep=220):
 
         self.x = 0.0 # y-position
         self.y = 0.0 # y-position

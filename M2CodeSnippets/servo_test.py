@@ -18,7 +18,7 @@ while True:
     # sleep(2)
     sleep(2)
     servo.min()
-    servo.angle = 1
+    print('MIN')
     sleep(2)
     servo.max()
-    
+    print('MAX')

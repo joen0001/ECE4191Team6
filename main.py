@@ -5,13 +5,14 @@ from Classes.TentaclePlanner import TentaclePlanner
 from Classes.DiffDriveRobot import DiffDriveRobot
 from Classes.Motor import Motor
 from Classes.Ultrasonic import UltrasonicSensor
+from Classes.RFID import RFIDScanner
 import numpy as np
 import time
 import math
 from matplotlib import pyplot as plt
 import multiprocessing
 import socket
-
+from gpiozero import AngularServo
 # Constants
 WHEEL_SEPARATION = 0.22
 WHEEL_RADIUS = 0.028
@@ -46,7 +47,7 @@ def wall_run(goal):
 
     last_time = time.time()
     # Initialize Components
-    motor_l, motor_r, us = initialize_motors_and_sensors()
+    motor_l, motor_r, us,servo,rfid = initialize_motors_and_sensors()
     # Establishing new classes:
     robot = DiffDriveRobot(dt=0.1, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
     controller = RobotController(Kp=1.0, Ki=0.15, wheel_radius=WHEEL_RADIUS, wheel_sep=WHEEL_SEPARATION)
@@ -62,9 +63,10 @@ def wall_run(goal):
     th = 0
     x=0
     y=0
-    x_wall = 0
     y_wall = 0
-    # Initial loop to start the wall following
+    print('waiting for Beep')
+    goal = rfid.BEEP()
+    print('beep received')
     while True:
         elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
@@ -85,13 +87,23 @@ def wall_run(goal):
             motor_l.stop()
             motor_r.stop()
             corner_counter += 1
+            
             start_th = th
-            print('TURNING')
-            print('TURNING')
-            print('TURNING')
-            print('TURNING')
-            print('TURNING')
-            while abs(start_th - th) < math.pi/2.22:
+            if corner_counter%4==2 and goal=='C':
+                motor_l.stop()
+                motor_r.stop()
+                time.sleep(1)
+                servo.max()
+                time.sleep(1)
+                servo.min()
+                print('A')
+                goal = ""
+            print('TURNING into corner'+str(corner_counter%4))
+            print('TURNING into corner'+str(corner_counter%4))
+            print('TURNING into corner'+str(corner_counter%4))
+            print('TURNING into corner'+str(corner_counter%4))
+            print('TURNING into corner'+str(corner_counter%4))
+            while abs(start_th - th) < math.pi/2.3:
                 old_encoder_l, old_encoder_r, old_time = motor_l.encoder.steps, motor_r.encoder.steps, time.time()
                 time.sleep(0.1)
                 elapsed_time = time.time() - old_time
@@ -103,38 +115,38 @@ def wall_run(goal):
                 motor_r.drive(-0.15)
                 #print(f'pose: {poses[-1]}')
                 poses.append([x, y, th])
-                x_wall = x
+                y_wall = y
+            if corner_counter%4==0:
+                motor_l.stop()
+                motor_r.stop()
+                goal = rfid.BEEP()
+            if corner_counter%4==1 and goal=='A':
+                motor_l.stop()
+                motor_r.stop()
+                time.sleep(1)
+                servo.max()
+                time.sleep(1)
+                servo.min()
+                print('A')
+                goal = ""
+            
         v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
         execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
-        #print('corner_counter:'+str(corner_counter))
 
-        #print(x_wall-poses[-1][0])
-        if corner_counter%4==2 and goal == 'A':
+        #print('corner_counter:'+str(corner_counter))
+        print('y' +str(poses[-1][1])+'     y_wall'+str(y_wall)+'    diff:'+str(poses[-1][1]-y_wall))
+        if abs(poses[-1][1]-y_wall)>0.15 and corner_counter%4==1 and goal == 'B':
             #and front_sensor <0.5
             motor_l.stop()
             motor_r.stop()
-            time.sleep(3)
-            print('HI')
+            time.sleep(1)
+            servo.max()
+            time.sleep(1)
+            servo.min()
+            print('B')
             goal = ""
             #drop_package()
-
-        if x_wall-poses[-1][0]>0.25 and corner_counter%4==2 and goal == 'B':
-            #and front_sensor <0.5
-            motor_l.stop()
-            motor_r.stop()
-            time.sleep(3)
-            print('HI')
-            goal = "A"
-            #drop_package()
-        if x_wall-poses[-1][0]>0.5 and corner_counter%4==2 and goal == 'C':
-            #and front_sensor <0.5
-            motor_l.stop()
-            motor_r.stop()
-            time.sleep(3)
-            print('HI')
-            goal = "B"
-            #drop_package()
-        time.sleep(0.05)
+        time.sleep(0.1)
 
 def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
@@ -197,14 +209,15 @@ def initialize_motors_and_sensors():
     """Initializes motors, encoders, and ultrasonic sensors."""
     motor_l = Motor(MOTOR_L_FORWARD, MOTOR_L_BACKWARD, MOTOR_L_ENABLE, ROTENC_LEFT_A, ROTENC_LEFT_B)
     motor_r = Motor(MOTOR_R_FORWARD, MOTOR_R_BACKWARD, MOTOR_R_ENABLE, ROTENC_RIGHT_A, ROTENC_RIGHT_B)
-
+    servo = AngularServo(SERVO,min_angle=0,max_angle=10, initial_angle=0)
+    rfid = RFIDScanner()
     # Define ultrasonic sensor class
     us = UltrasonicSensor(ULT_FRONT_ECHO,ULT_FRONT_TRIG,
                           ULT_SIDEFRONT_ECHO,ULT_SIDEFRONT_TRIG,
                           ULT_SIDEBACK_ECHO, ULT_SIDEBACK_TRIG,
                           )
 
-    return motor_l, motor_r, us 
+    return motor_l, motor_r, us, servo,rfid
 
 
 def print_sensor_distances(us):

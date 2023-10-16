@@ -54,9 +54,11 @@ class WallFollower:
         left_distance = self.us_sensor.sidefront_distance()
         left2_distance = self.us_sensor.sideback_distance()
         angle = left_distance-left2_distance
+        
         derivativeA = angle - previousAngle
         integA = integA+angle
-        outputA = 12*angle +4*derivativeA+0.01*integA
+        outputA = 10*angle +5*derivativeA+0.001*integA
+        print(angle)
         return 0.1, -outputA,angle,integA
     ''''
     def maintain_left_distance(self):
