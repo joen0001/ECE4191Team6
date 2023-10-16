@@ -57,7 +57,7 @@ class WallFollower:
         
         derivativeA = angle - previousAngle
         integA = integA+angle
-        outputA = 10*angle +5*derivativeA+0.001*integA
+        outputA = 15*angle +5*derivativeA+0.001*integA
         print(angle)
         return 0.1, -outputA,angle,integA
     ''''
@@ -107,13 +107,11 @@ class WallFollower:
         #    return 0.1, -(min_dist-threshold)*2.1
         '''
         
-    def is_at_corner(self, abs_dist):
+    def is_at_corner(self):
         # Assuming 20 as the distance in cm to detect corner/wall.
-        if self.us_sensor.front_distance() < 0.122 and abs_dist<0.8:
+        if self.us_sensor.front_distance()<0.132:
             # 90 degree turn right
-            return 0
-        elif self.us_sensor.front_distance() < 0.122 and abs_dist>0.8:
-            return 1
-            # return 0,-np.pi/2
+            return 0,0
         else:
-            return 2
+            return None,None
+           
