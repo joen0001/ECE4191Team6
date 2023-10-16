@@ -67,6 +67,7 @@ def wall_run(goal):
     print('waiting for Beep')
     goal = rfid.BEEP()
     print('beep received')
+    start = 0
     while True:
         elapsed_time, angular_velocity_l, angular_velocity_r = compute_velocities(motor_l, motor_r, last_time)
         robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
@@ -110,7 +111,7 @@ def wall_run(goal):
                 angular_velocity_l = 2 * math.pi * ((motor_l.encoder.steps - old_encoder_l) / 960) / elapsed_time
                 angular_velocity_r = 2 * math.pi * ((motor_r.encoder.steps - old_encoder_r) / 960) / elapsed_time
                 robot.wl, robot.wr = angular_velocity_l, angular_velocity_r
-                x, y, th = robot.pose_update([angular_velocity_l, angular_velocity_r])
+                x, y, th,start = robot.pose_update([angular_velocity_l, angular_velocity_r],start)
                 motor_l.drive(0.15)
                 motor_r.drive(-0.15)
                 #print(f'pose: {poses[-1]}')
@@ -129,9 +130,8 @@ def wall_run(goal):
                 servo.min()
                 print('A')
                 goal = ""
-            
         v, w,previousAngle,integA = waller.maintain_left_distance(previousAngle,integA)
-        execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING)
+        x,y,th,start = execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING,start)
 
         #print('corner_counter:'+str(corner_counter))
         print('y' +str(poses[-1][1])+'     y_wall'+str(y_wall)+'    diff:'+str(poses[-1][1]-y_wall))
@@ -148,16 +148,16 @@ def wall_run(goal):
             #drop_package()
         time.sleep(0.1)
 
-def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING):
+def execute_drive_cycle(controller, robot, motor_l, motor_r, v, w, poses, velocities, duty_cycle_commands, MOTOR_SPEED_SCALING,start):
     duty_cycle_l, duty_cycle_r = controller.drive(v, w, robot.wl, robot.wr)
-    x, y, th = robot.pose_update([robot.wl, robot.wr])
+    x, y, th,start = robot.pose_update([robot.wl, robot.wr],start)
     arr[0] = x
     arr[1] = y
     arr[2] = th
-    print('x:'+str(x)+'y:'+str(y)+'theta:'+str(th))
+    print(f'x: {x}' f'y: {y}' f'th: {th}'f'start: {start}')
     log_data(poses, velocities, duty_cycle_commands, x, y, th, robot.wl, robot.wr, duty_cycle_l, duty_cycle_r)
     drive_motors(motor_l, motor_r, duty_cycle_l+0.025, duty_cycle_r, MOTOR_SPEED_SCALING)
-    return x,y,th  
+    return x,y,th,start
 
 def drop_package():
     print("This is where I would drop the package!")
