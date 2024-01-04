@@ -1,7 +1,5 @@
 # ECE4191Team6
-Code Repository for ECE4191 Team 6 2023
-
-Code Repository for automated parcel delivery robot
+Code Repository for ECE4191 Team 6 2023 Automated Parcel Delivery Robot
 
 Key Design Features
 - Two-Wheel Configuration
